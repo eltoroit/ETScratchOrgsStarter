@@ -1,6 +1,7 @@
 {
 	"name": "et-basic-project",
 	"private": true,
+	"type": "module",
 	"version": "Summer '22 (v55)",
 	"description": "Sample SFDX Scratch Project",
 	"repository": {
@@ -19,6 +20,7 @@
 	},
 	"homepage": "https://github.com/eltoroit/ETScratchOrgsStarter#readme",
 	"scripts": {
+		"createOrg": "node @ELTOROIT/scripts/nodejs/orgBuilder.js",
 		"lint": "npm run lint:lwc && npm run lint:aura",
 		"lint:aura": "eslint **/aura/**",
 		"lint:lwc": "eslint **/lwc/**",
@@ -41,7 +43,8 @@
 		"husky": "^8.0.1",
 		"lint-staged": "^13.0.3",
 		"prettier": "^2.7.1",
-		"prettier-plugin-apex": "^1.10.0"
+		"prettier-plugin-apex": "^1.10.0",
+		"node-fetch": "^3.3.1"
 	},
 	"husky": {
 		"hooks": {

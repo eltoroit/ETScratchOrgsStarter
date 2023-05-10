@@ -21,6 +21,7 @@
 	"homepage": "https://github.com/eltoroit/ETScratchOrgsStarter#readme",
 	"scripts": {
 		"createOrg": "node @ELTOROIT/scripts/nodejs/orgBuilder.js",
+		"CICD": "ET_CICD=TRUE node @ELTOROIT/scripts/nodejs/orgBuilder.js",
 		"lint": "npm run lint:lwc && npm run lint:aura",
 		"lint:aura": "eslint **/aura/**",
 		"lint:lwc": "eslint **/lwc/**",
@@ -43,8 +44,7 @@
 		"husky": "^8.0.1",
 		"lint-staged": "^13.0.3",
 		"prettier": "^2.7.1",
-		"prettier-plugin-apex": "^1.10.0",
-		"node-fetch": "^3.3.1"
+		"prettier-plugin-apex": "^1.10.0"
 	},
 	"husky": {
 		"hooks": {
@@ -58,5 +58,10 @@
 		"**/{aura|lwc}/**": [
 			"eslint"
 		]
+	},
+	"dependencies": {
+		"node-fetch": "^3.3.1",
+		"jsonc-parser": "^3.2.0",
+		"fs-extra": "^11.1.1"
 	}
 }

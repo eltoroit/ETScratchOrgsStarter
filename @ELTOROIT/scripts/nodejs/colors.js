@@ -102,6 +102,12 @@ export default class Colors {
 
 		console.log(colorBgBlack + colorBright + colorFgGreen + Colors.getTrace({}) + msg + colorReset);
 	}
+
+	static sfdxShowCommand({ command }) {
+		ET_Asserts.hasData({ value: command, message: 'command' });
+
+		return colorBgBlack + colorBright + colorFgYellow + command + colorReset;
+	}
 }
 
 // Define variables

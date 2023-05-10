@@ -1,18 +1,16 @@
 // # Execute using: npm install && npm run createOrg
+import Logs2 from './logs.js';
 import OS2 from './lowLevelOs.js';
-import SFDX from './sfdx.js';
 import Colors2 from './colors.js';
 import { parse } from 'jsonc-parser';
 
 const config = {
 	errors: [],
-	cicd: false,
-	debug: false,
-	verbose: false,
+	debug: true,
+	verbose: true,
 	resultsTofile: true,
 	checkUrlExists: true,
 	executeManualChecks: false,
-	deployPage: '/lightning/setup/DeployStatus/home',
 	steps: [
 		// No parameters sent, then do everything
 		'mainRunJest',
@@ -44,16 +42,26 @@ const config = {
 
 export default class OrgBuilder {
 	root = null;
-	sfdx;
 
 	async start() {
 		Colors2.clearScreen();
-		config.cicd = !!process.env.ET_CICD;
-		this.sfdx = new SFDX(config);
 		this.root = await OS2.getFullPath({ config, relativePath: '.' });
+		await this._validateETCopyData();
 		await this._readConfigFile();
-		await OS2.recreateFolder({ config, path: './etLogs' });
-		await this.sfdx.validateETCopyData({ config });
+	}
+
+	async _validateETCopyData() {
+		Colors2.writeInstruction({ msg: 'Validating ETCopyData' });
+		let output = await OS2.execute({ config, command: 'sfdx plugins --core' });
+		let plugins = output.stdout.split('\n');
+		let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
+		if (etcd.length !== 1) {
+			let msg = 'Could not find plugin for ETCopyData installed';
+			Logs2.reportErrorMessage({ config, msg });
+			throw new Error(msg);
+		} else {
+			Colors2.success({ msg: etcd[0] });
+		}
 	}
 
 	async _readConfigFile() {

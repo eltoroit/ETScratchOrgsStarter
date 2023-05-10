@@ -1,10 +1,10 @@
-import Logs2 from './logs.js';
+import Logs2 from './logs.mjs';
 import { resolve } from 'path';
 import fetch from 'node-fetch';
-import Colors2 from './colors.js';
+import Colors2 from './colors.mjs';
 import * as fsExtra from 'fs-extra';
 import * as fs from 'node:fs/promises';
-import ET_Asserts from './etAsserts.js';
+import ET_Asserts from './etAsserts.mjs';
 import { exec, spawn } from 'node:child_process';
 
 export default class LowLevelOS {
@@ -80,7 +80,7 @@ export default class LowLevelOS {
 			await fs.writeFile(path, data);
 		} catch (ex) {
 			let msg = `Error creating file: ${path}"`;
-			Logs2.reportException({ config: this.config, msg, ex });
+			Logs2.reportException({ config, msg, ex });
 			throw ex;
 		}
 	}
@@ -155,18 +155,20 @@ export default class LowLevelOS {
 		});
 	}
 
-	static async executeAsync({ config, callbackAreWeDone, app, args, cwd, expectedCode }) {
+	static async executeAsync({ config, app, args, cwd, expectedCode, callbackAreWeDone }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
-		ET_Asserts.hasData({ value: callbackAreWeDone, message: 'callbackAreWeDone' });
 		ET_Asserts.hasData({ value: app, message: 'app' });
 		ET_Asserts.hasData({ value: expectedCode, message: 'expectedCode' });
+		// ET_Asserts.hasData({ value: callbackAreWeDone, message: 'callbackAreWeDone' });
+
+		if (!callbackAreWeDone) callbackAreWeDone = () => {};
 
 		// Can't do async/await because it has events
 		return new Promise((resolve, reject) => {
-			let currentTest = { ...config.currentTest };
+			let currentStep = config.currentStep;
 			if (config.debug) Colors2.debug({ msg: 'EXECUTING (Async): ' + Colors2.getPrettyJson({ obj: { app, args, cwd } }) });
 
-			let response = [];
+			let response = {};
 
 			const forceResolve = () => {
 				process.stdout.unref();
@@ -179,14 +181,28 @@ export default class LowLevelOS {
 				ET_Asserts.hasData({ value: eventName, message: 'eventName' });
 				ET_Asserts.hasData({ value: item, message: 'item' });
 
-				let msg = `${eventName}: ${item.toString()}`;
+				// Save the response
 				if (eventName === 'CLOSE') {
-					msg = `${eventName}: ${Colors2.getPrettyJson({ obj: item })}`;
+					if (response[eventName]) {
+						// Why is closed called multiple times?
+						debugger;
+					} else {
+						response[eventName] = { ...item };
+					}
+					item = Colors2.getPrettyJson({ obj: item });
+				} else {
+					if (!response[eventName]) response[eventName] = '';
+					if (item.toString) {
+						item = item.toString();
+					} else {
+						debugger;
+					}
+					response[eventName] += item;
 				}
-				response.push(msg);
-				let notification = { currentTest, eventName, app, args, cwd, msg, response, forceResolve };
-				if (config.debug) Colors2.debug({ msg: `${notification.currentTest.testName} | ${notification.msg.trim()}` });
-				// if (await callbackAreWeDone(notification)) resolve();
+
+				// Notify
+				let notification = { currentStep, eventName, app, args, cwd, item, response, forceResolve };
+				if (config.debug) Colors2.debug({ msg: `${notification.currentStep} | ${notification.item.trim()}` });
 				callbackAreWeDone(notification);
 			};
 
@@ -209,7 +225,9 @@ export default class LowLevelOS {
 
 			const process = spawn(app, args, { detach: true, shell: true, cwd });
 			process.on('spawn', (...data) => {
-				report({ eventName: 'SPAWN', data });
+				if (config.debug && config.verbose) {
+					report({ eventName: 'SPAWN', data });
+				}
 			});
 
 			process.on('error', (...data) => {
@@ -226,14 +244,17 @@ export default class LowLevelOS {
 
 			process.on('close', (code, signal) => {
 				report({ eventName: 'CLOSE', data: { code, signal } });
-				try {
-					ET_Asserts.equals({ expected: expectedCode, actual: code, message: 'Application dis dot completed succesfully' });
-					resolve(response);
-				} catch (ex) {
-					let msg = 'Error executing app';
-					Logs2.reportException({ config, msg, ex });
-					reject(response);
-				}
+				setTimeout(() => {
+					// Let ths process cool off :-)
+					try {
+						ET_Asserts.equals({ expected: expectedCode, actual: code, message: 'Application did dot completed succesfully' });
+						resolve(response);
+					} catch (ex) {
+						let msg = 'Error executing app';
+						Logs2.reportException({ config, msg, ex });
+						reject(response);
+					}
+				}, 1e3);
 			});
 		});
 	}

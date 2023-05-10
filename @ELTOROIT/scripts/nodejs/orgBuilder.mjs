@@ -1,7 +1,7 @@
 // # Execute using: npm install && npm run createOrg
-import OS2 from './lowLevelOs.js';
-import SFDX from './sfdx.js';
-import Colors2 from './colors.js';
+import OS2 from './lowLevelOs.mjs';
+import SFDX from './sfdx.mjs';
+import Colors2 from './colors.mjs';
 import { parse } from 'jsonc-parser';
 
 const config = {
@@ -15,29 +15,29 @@ const config = {
 	deployPage: '/lightning/setup/DeployStatus/home',
 	steps: [
 		// No parameters sent, then do everything
-		'mainRunJest',
-		'mainBackupAlias',
-		'mainCreateScratchOrg',
-		'mainPauseToCheck',
-		'mainOpenDeployPage',
-		'mainPrepareOrg',
-		'mainManualMetadataBefore',
-		'mainExecuteApexBeforePush',
-		'mainInstallPackages',
-		// mainDeploy (Do not do a deploy, rather do a push)
-		'mainPushMetadata',
-		'mainManualMetadataAfter',
-		'mainExecuteApexAfterPush',
-		'mainAssignPermissionSet',
-		'mainDeployAdminProfile',
-		'mainLoadData',
-		'mainExecuteApexAfterData',
-		'mainRunApexTests',
-		// mainPushAgain
-		// mainReassignAlias
-		'mainPublishCommunity',
-		'mainGeneratePassword',
-		'mainDeployToSandbox',
+		'RunJest',
+		'BackupAlias',
+		'CreateScratchOrg',
+		'PauseToCheck',
+		'OpenDeployPage',
+		'PrepareOrg',
+		'ManualMetadataBefore',
+		'ExecuteApexBeforePush',
+		'InstallPackages',
+		// Deploy (Do not do a deploy, rather do a push)
+		'PushMetadata',
+		'ManualMetadataAfter',
+		'ExecuteApexAfterPush',
+		'AssignPermissionSet',
+		'DeployAdminProfile',
+		'LoadData',
+		'ExecuteApexAfterData',
+		'RunApexTests',
+		// PushAgain
+		// ReassignAlias
+		'PublishCommunity',
+		'GeneratePassword',
+		'DeployToSandbox',
 		'QuitSuccess',
 	],
 };
@@ -50,10 +50,11 @@ export default class OrgBuilder {
 		Colors2.clearScreen();
 		config.cicd = !!process.env.ET_CICD;
 		this.sfdx = new SFDX(config);
-		this.root = await OS2.getFullPath({ config, relativePath: '.' });
+		config.root = await OS2.getFullPath({ config, relativePath: '.' });
 		await this._readConfigFile();
-		await OS2.recreateFolder({ config, path: './etLogs' });
+		await this._restartLogFolder();
 		await this.sfdx.validateETCopyData({ config });
+		await this.sfdx.processSteps({ config });
 	}
 
 	async _readConfigFile() {
@@ -61,6 +62,10 @@ export default class OrgBuilder {
 		let configFileName = await OS2.getFullPath({ config, relativePath: './@ELTOROIT/scripts/nodejs/orgBuilder.jsonc' });
 		let configJSONC = await OS2.readFile({ config, path: configFileName });
 		config.SFDX = parse(configJSONC);
+	}
+
+	async _restartLogFolder() {
+		await OS2.recreateFolder({ config, path: './etLogs' });
 	}
 }
 

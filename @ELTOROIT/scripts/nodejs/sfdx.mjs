@@ -1,49 +1,146 @@
-import Logs2 from './logs.js';
-import Colors2 from './colors.js';
-import OS2 from './lowLevelOs.js';
+import Logs2 from './logs.mjs';
+import Colors2 from './colors.mjs';
+import OS2 from './lowLevelOs.mjs';
 
 export default class SFDX {
-	async validateETCopyData({ config }) {
-		Colors2.writeInstruction({ msg: 'Validating ETCopyData' });
-		try {
-			let output = await this._runSFDX({ config, command: 'sfdx plugins --coreTTT' });
-			let plugins = output.stdout.split('\n');
-			let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
-			if (etcd.length !== 1) {
-				let msg = 'Could not find plugin for ETCopyData installed';
-				Logs2.reportErrorMessage({ config, msg });
-				throw new Error(msg);
+	async processSteps({ config }) {
+		for (const step of config.steps) {
+			if (this[step]) {
+				try {
+					await this[step]({ config });
+				} catch (ex) {
+					Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
+				}
 			} else {
-				Colors2.success({ msg: etcd[0] });
+				console.log(`Skipping ${step}`);
 			}
-		} catch (ex) {
-			Logs2.reportErrorMessage({ config, msg: 'Failed to validate ETcopyData' });
 		}
 	}
 
-	async _runSFDX({ config, command }) {
+	async validateETCopyData({ config }) {
+		config.currentStep = 'Validating ETCopyData';
+		if (config.SFDX.importData) {
+			Colors2.writeInstruction({ msg: config.currentStep });
+			try {
+				let command = 'sfdx plugins --core';
+				let logFile = 'etLogs/validateETCopyData.txt';
+				let result = await this._runSFDX({ config, command, logFile });
+				debugger;
+				let plugins = result.STDOUT.split('\n');
+				let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
+				if (etcd.length !== 1) {
+					let msg = 'Could not find plugin for ETCopyData installed';
+					Logs2.reportErrorMessage({ config, msg });
+					throw new Error(msg);
+				} else {
+					Colors2.success({ msg: etcd[0] });
+				}
+			} catch (ex) {
+				let msg = `${config.currentStep} failed`;
+				Logs2.reportErrorMessage({ config, msg });
+				throw new Error(msg);
+			}
+		} else {
+			Colors2.writeMessage({ msg: 'Skipping validating ETCopyData because data will not be imported' });
+		}
+	}
+
+	async RunJest({ config }) {
+		config.currentStep = '*** Running JEST tests...';
+		if (config.SFDX.runJestTests) {
+			Colors2.sfdxShowStatus({ status: config.currentStep });
+			try {
+				let command = 'npm run test:unit:CICD';
+				let logFile = 'etLogs/jestTests.txt';
+				await this._runAndLog({ config, command, logFile });
+				Colors2.success({ msg: `${new Date()} - Completed succesfully` });
+			} catch (ex) {
+				let msg = `${config.currentStep} failed`;
+				Logs2.reportException({ config, msg, ex });
+				throw ex;
+			}
+		} else {
+			Colors2.sfdxShowStatus({ status: '*** JEST tests are being skipped!' });
+		}
+	}
+
+	// async BackupAlias({ config }) {
+	// 	config.currentStep = '*** Backup this org alias';
+	// 	if (config.SFDX.backupAlias) {
+	// 		Colors2.sfdxShowStatus({ status: config.currentStep });
+	// 		try {
+	// 			let command = 'sfdx force:alias:list --json';
+	// 			let logFile = 'etLogs/aliasList.json';
+	// 			let result = await this._runSFDX({ config, command, logFile });
+	// 		} catch (ex) {
+	// 			//
+	// 		}
+	// 	} else {
+	// 	}
+	// }
+
+	async _runSFDX({ config, command, logFile }) {
+		if (!command.startsWith(command)) command = `sfdx ${command}`;
+		return await this._runAndLog({ config, command, logFile });
+	}
+
+	async _runAndLog({ config, command, logFile }) {
 		let result = null;
+		let notification = null;
 
-		if (!command.startsWith(command)) {
-			command = `sfdx ${command}`;
-		}
-		Colors2.sfdxShowCommand({ command });
+		const logResults = async () => {
+			let data = '';
+			debugger;
+			data += `${notification.currentStep}\n`;
+			data += `${notification.app} ${notification.args.join(' ')}\n`;
+			data += `${notification.cwd}\n`;
+			data += 'STDOUT\n';
+			data += `${notification.response.STDOUT}\n`;
+			data += 'STDERR\n';
+			data += `${notification.response.STDERR}\n`;
+			data += 'CLOSE\n';
+			data += `${Colors2.getPrettyJson({ obj: notification.response.CLOSE })}\n`;
+			await OS2.writeFile({ config, path: logFile, data });
+		};
+
 		try {
-			result = await OS2.execute({ config, command });
-		} catch (ex) {
-			Logs2.reportException({ config, msg: `Failed to execute ${command}: ${ex.stderr}`, ex });
-			throw ex;
-		}
+			Colors2.sfdxShowCommand({ command });
 
-		return result;
+			command = command.split(' ');
+			let app = command.shift();
+			let args = command;
+			result = await OS2.executeAsync({
+				config,
+				app,
+				args,
+				cwd: config.root,
+				expectedCode: 0,
+				callbackAreWeDone: (data) => {
+					if (config.verbose) Colors2.debug({ msg: data.item });
+					notification = data;
+				},
+			});
+			debugger;
+			logResults();
+			return result;
+		} catch (ex) {
+			debugger;
+			logResults();
+			let msg = `${config.currentStep} failed`;
+			if (ex.stderr) {
+				Logs2.reportErrorMessage({ config, msg });
+				let lines = ex.stderr.split('\n');
+				lines.forEach((line) => {
+					Logs2.reportErrorMessage({ config, msg: line.trim() });
+				});
+			} else {
+				Logs2.reportException({ config, msg, ex });
+			}
+			throw new Error(msg);
+		}
 	}
 }
 
-// # SFDX Core functions
-// function et_sfdx(){
-// 	showCommand "sfdx $*"
-// 	sfdx $* || ReportError
-// }
 // function et_sfdxPush(){
 // 	showStatus "*** Pushing metadata to scratch Org..."
 // 	showCommand "sfdx $*"
@@ -153,53 +250,36 @@ export default class SFDX {
 // 		cat $etFile | jq "del(.result.tests, .result.coverage)"
 // 	fi
 // }
-// function backupAlias() {
-// 	showCommand "sfdx force:alias:list --json"
-// 	etFile=etLogs/aliasList.json
-// 	sfdx force:alias:list --json >> $etFile
-// 	if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// 		cat $etFile
-// 	fi
-
-// 	showCommand "Backing up org: $ALIAS"
-// 	cat $etFile | jq --arg JQALIAS "$ALIAS" '.result[] | select(.alias==$JQALIAS) | .value' | while read -r UN; do
-// 		local TEMP="${UN%\"}"
-// 		UN="${TEMP#\"}"
-// 		# showCommand "[$ALIAS.bak] <= [$UN]"
-// 		et_sfdx force:alias:set $ALIAS.bak=$UN
-// 	done
-// }
 
 // #####################################################################################################################################################################
 // # Script macro-pieces
 // #####################################################################################################################################################################
-// function mainRunJest() {
-// 	# --- Run JEST tests before anything else!
-// 	if [[ "$RUN_JEST_TESTS" = true ]]; then
-// 		showStatus "*** Running JEST tests... ($0 ${FUNCNAME[0]})"
-// 		etFile=etLogs/jestTests.json
-// 		showCommand "JEST logs are here: $etFile"
-// 		npm run test:unit:CICD &> $etFile
-// 		local resultcode=$?
-// 		if [[ $resultcode -ne 0 ]]; then
-// 			if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// 				cat $JEST_LOG
-// 			fi
-// 	 		ReportError
-// 		else
-// 			showComplete
-// 		fi
-// 	else
-// 		showStatus "*** JEST tests are being skipped! *** ($0 ${FUNCNAME[0]})"
-// 	fi
-// }
-// function mainBackupAlias() {
-// 	# --- Backup this org alias
-// 	if [[ "$BACKUP_ALIAS" = true ]]; then
-// 		showStatus "*** Backup this org alias... ($0 ${FUNCNAME[0]})"
-// 		backupAlias
-// 		showComplete
-// 	fi
+
+// // 	function backupAlias() {
+// // 	showCommand "sfdx force:alias:list --json"
+// // 	etFile=etLogs/aliasList.json
+// // 	sfdx force:alias:list --json >> $etFile
+// // 	if [[ "$AUTOMATED_PROCESS" = true ]]; then
+// // 		cat $etFile
+// // 	fi
+
+// // 	showCommand "Backing up org: $ALIAS"
+// // 	cat $etFile | jq --arg JQALIAS "$ALIAS" '.result[] | select(.alias==$JQALIAS) | .value' | while read -r UN; do
+// // 		local TEMP="${UN%\"}"
+// // 		UN="${TEMP#\"}"
+// // 		# showCommand "[$ALIAS.bak] <= [$UN]"
+// // 		et_sfdx force:alias:set $ALIAS.bak=$UN
+// // 	done
+// // }
+
+// // 	function mainBackupAlias() {
+// // 	# --- Backup this org alias
+// // 	if [[ "$BACKUP_ALIAS" = true ]]; then
+// // 		showStatus "*** Backup this org alias... ($0 ${FUNCNAME[0]})"
+// // 		backupAlias
+// // 		showComplete
+// // 	fi
+// // }
 // }
 // function mainCreateScratchOrg() {
 // 	# --- Create scratch org

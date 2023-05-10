@@ -1,7 +1,6 @@
 {
 	"name": "et-basic-project",
 	"private": true,
-	"type": "module",
 	"version": "Summer '22 (v55)",
 	"description": "Sample SFDX Scratch Project",
 	"repository": {
@@ -20,8 +19,8 @@
 	},
 	"homepage": "https://github.com/eltoroit/ETScratchOrgsStarter#readme",
 	"scripts": {
-		"createOrg": "node @ELTOROIT/scripts/nodejs/orgBuilder.js",
-		"CICD": "ET_CICD=TRUE node @ELTOROIT/scripts/nodejs/orgBuilder.js",
+		"createOrg": "node @ELTOROIT/scripts/nodejs/orgBuilder.mjs",
+		"CICD": "ET_CICD=TRUE node @ELTOROIT/scripts/nodejs/orgBuilder.mjs",
 		"lint": "npm run lint:lwc && npm run lint:aura",
 		"lint:aura": "eslint **/aura/**",
 		"lint:lwc": "eslint **/lwc/**",

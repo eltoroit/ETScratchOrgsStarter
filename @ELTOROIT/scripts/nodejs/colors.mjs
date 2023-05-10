@@ -1,5 +1,6 @@
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
-import ET_Asserts from './etAsserts.js';
+import ET_Asserts from './etAsserts.mjs';
 
 export default class Colors {
 	static clearScreen() {
@@ -106,7 +107,18 @@ export default class Colors {
 	static sfdxShowCommand({ command }) {
 		ET_Asserts.hasData({ value: command, message: 'command' });
 
-		return colorBgBlack + colorBright + colorFgYellow + command + colorReset;
+		console.log(colorBgBlack + colorBright + colorFgYellow + command + colorReset);
+	}
+
+	static sfdxShowStatus({ status }) {
+		ET_Asserts.hasData({ value: status, message: 'status' });
+
+		console.log(colorBgBlack + colorBright + colorFgMagenta + status + colorReset);
+	}
+
+	static sfdxShowComplete() {
+		console.log(colorBgBlack + colorBright + colorFgGreen + 'Task Completed' + colorReset);
+		console.log(colorBgBlack + colorBright + colorFgGreen + new Date() + colorReset);
 	}
 }
 

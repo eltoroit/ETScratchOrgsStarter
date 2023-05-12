@@ -60,7 +60,8 @@ export default class OrgBuilder {
 	}
 
 	async _restartLogFolder() {
-		await OS2.recreateFolder({ config, path: './etLogs' });
+		config.rootLogs = './etLogs';
+		await OS2.recreateFolder({ config, path: config.rootLogs });
 	}
 }
 

@@ -1,11 +1,12 @@
 {
-	"alias": "soDEMO", // Alias for scratch org
-	"days": 1, // How long will the scratch org live (max 30)
+	"alias": "soDEMO",
+	"days": 1,
 	"importData": true, // Do you want to use ETCopyData to import data?
-	"quitOnErrors": false, // Quit on errors?
-	"userOnScreen": true, // Automated Script? Can I prompt the user for a key to continue?
+	"runJestTests": false,
+	"createScratchOrg": false,
+	"quitOnErrors": false,
+	// "userOnScreen": true, // Automated Script? Can I prompt the user for a key to continue?
 	"showDeployPage": true, // Open browser page to show deployment progress
-	"runJestTests": true, // Do you want to run JEST tests in this project?
 	"pauseToCheckOrg": false, // Stop to validate org was succesfully created? Sometimes Sslesforce fails when creating an org and shows the login screen rather than opening an org.
 	"backupAlias": true, // Backup alias, in case you need to go back :-)
 	"performDeploy": true, // Deploy code before pushing it? I have seen some issues with deployments of communities that get solved like this

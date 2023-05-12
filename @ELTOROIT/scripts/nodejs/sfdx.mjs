@@ -22,11 +22,11 @@ export default class SFDX {
 
 	async validateETCopyData({ config }) {
 		config.currentStep = 'Validating ETCopyData';
+		let command = 'sfdx plugins --core';
+		let logFile = 'validateETCopyData.txt';
+		let result = await this._runSFDX({ isGoingToRun: config.SFDX.importData, config, command, logFile });
+		// Process results
 		if (config.SFDX.importData) {
-			let command = 'sfdx plugins --core';
-			let logFile = 'etLogs/validateETCopyData.txt';
-			let result = await this._runSFDX({ config, command, logFile });
-			// Process results
 			let plugins = result.STDOUT.split('\n');
 			let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
 			if (etcd.length !== 1) {
@@ -36,45 +36,59 @@ export default class SFDX {
 			} else {
 				Colors2.success({ msg: etcd[0] });
 			}
-		} else {
-			Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
 		}
 	}
 
 	async RunJest({ config }) {
 		config.currentStep = 'Running JEST tests';
-		if (config.SFDX.runJestTests) {
-			let command = 'npm run test:unit:CICD';
-			let logFile = 'etLogs/jestTests.txt';
-			await this._runAndLog({ config, command, logFile });
-		} else {
-			Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
+		let command = 'npm run test:unit:CICD';
+		let logFile = 'jestTests.txt';
+		await this._runAndLog({ isGoingToRun: config.SFDX.runJestTests, config, command, logFile });
+	}
+
+	async BackupAlias({ config }) {
+		config.currentStep = 'Backup this org alias (Get aliases)';
+		let command = 'sfdx force:alias:list --json';
+		let logFile = 'aliasListAll.json';
+		let result = await this._runSFDX({ isGoingToRun: config.SFDX.backupAlias, config, command, logFile });
+		// Process results
+		if (config.SFDX.backupAlias) {
+			let orgs = JSON.parse(result.STDOUT).result;
+			let org = orgs.find((org) => org.alias === config.SFDX.alias);
+			config.currentStep = 'Backup this org alias (Create bakup alias)';
+			let command = `sfdx alias:set ${config.SFDX.alias}.bak=${org.value}`;
+			let logFile = 'aliasListSet.txt';
+			await this._runSFDX({ isGoingToRun: config.SFDX.backupAlias, config, command, logFile });
 		}
 	}
 
-	// async BackupAlias({ config }) {
-	// 	config.currentStep = '*** Backup this org alias';
-	// 	if (config.SFDX.backupAlias) {
-	// 		Colors2.sfdxShowStatus({ status: config.currentStep });
-	// 		try {
-	// 			let command = 'sfdx force:alias:list --json';
-	// 			let logFile = 'etLogs/aliasList.json';
-	// 			let result = await this._runSFDX({ config, command, logFile });
-	// 		} catch (ex) {
-	// 			//
-	// 		}
-	// 	} else {
-	// 	}
-	// }
+	async CreateScratchOrg({ config }) {
+		let logFile, command;
 
-	async _runSFDX({ config, command, logFile }) {
-		if (!command.startsWith(command)) command = `sfdx ${command}`;
-		return await this._runAndLog({ config, command, logFile });
+		config.currentStep = 'Create scratch org (Create)';
+		command = `sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername --setalias "${config.SFDX.alias}" -d "${config.SFDX.days}"`;
+		logFile = 'createScratchOrgCreate.txt';
+		await this._runAndLog({ isGoingToRun: config.SFDX.createScratchOrg, config, command, logFile });
+
+		config.currentStep = 'Create scratch org (Set as default)';
+		command = `sfdx force:config:set defaultusername="${config.SFDX.alias}"`;
+		logFile = 'createScratchOrgDefault.txt';
+		await this._runAndLog({ isGoingToRun: config.SFDX.createScratchOrg, config, command, logFile });
 	}
 
-	async _runAndLog({ config, command, logFile }) {
+	async _runSFDX({ isGoingToRun, config, command, logFile }) {
+		if (!command.startsWith(command)) command = `sfdx ${command}`;
+		return await this._runAndLog({ isGoingToRun, config, command, logFile });
+	}
+
+	async _runAndLog({ isGoingToRun, config, command, logFile }) {
 		let result = null;
 		let notification = null;
+
+		if (!isGoingToRun) {
+			Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
+			return;
+		}
 
 		const logResults = async () => {
 			let data = '';
@@ -83,11 +97,17 @@ export default class SFDX {
 			data += '\n=== === === RESULT === === ===\n';
 			data += `${Colors2.getPrettyJson({ obj: notification.response.CLOSE })}\n`;
 			// data += `${notification.cwd}\n`;
-			data += '\n=== === === STDOUT === === ===\n';
-			data += `${notification.response.STDOUT}\n`;
-			data += '\n=== === === STDERR === === ===\n';
-			data += `${notification.response.STDERR}\n`;
-			await OS2.writeFile({ config, path: logFile, data });
+			if (notification.response.STDOUT) {
+				data += '\n=== === === STDOUT === === ===\n';
+				data += `${notification.response.STDOUT}\n`;
+			}
+			if (notification.response.STDERR) {
+				data += '\n=== === === STDERR === === ===\n';
+				data += `${notification.response.STDERR}\n`;
+			}
+
+			let path = `${config.rootLogs}/${new Date().getTime()}_${logFile}`;
+			await OS2.writeFile({ config, path, data });
 		};
 
 		try {
@@ -109,7 +129,6 @@ export default class SFDX {
 					notification = data;
 				},
 			});
-			debugger;
 			if (result.CLOSE.code !== 0) {
 				throw result;
 			}
@@ -255,39 +274,6 @@ export default class SFDX {
 // # Script macro-pieces
 // #####################################################################################################################################################################
 
-// // 	function backupAlias() {
-// // 	showCommand "sfdx force:alias:list --json"
-// // 	etFile=etLogs/aliasList.json
-// // 	sfdx force:alias:list --json >> $etFile
-// // 	if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// // 		cat $etFile
-// // 	fi
-
-// // 	showCommand "Backing up org: $ALIAS"
-// // 	cat $etFile | jq --arg JQALIAS "$ALIAS" '.result[] | select(.alias==$JQALIAS) | .value' | while read -r UN; do
-// // 		local TEMP="${UN%\"}"
-// // 		UN="${TEMP#\"}"
-// // 		# showCommand "[$ALIAS.bak] <= [$UN]"
-// // 		et_sfdx force:alias:set $ALIAS.bak=$UN
-// // 	done
-// // }
-
-// // 	function mainBackupAlias() {
-// // 	# --- Backup this org alias
-// // 	if [[ "$BACKUP_ALIAS" = true ]]; then
-// // 		showStatus "*** Backup this org alias... ($0 ${FUNCNAME[0]})"
-// // 		backupAlias
-// // 		showComplete
-// // 	fi
-// // }
-// }
-// function mainCreateScratchOrg() {
-// 	# --- Create scratch org
-// 	showStatus "*** Creating scratch Org... ($0 ${FUNCNAME[0]})"
-// 	et_sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername --setalias "$ALIAS" -d "$DAYS"
-// 	sfdx force:config:set defaultusername="$ALIAS"
-// 	showComplete
-// }
 // function mainPauseToCheck() {
 // 	# --- Pause to valiate org created
 // 	if [[ "$PAUSE2CHECK_ORG" = true ]]; then

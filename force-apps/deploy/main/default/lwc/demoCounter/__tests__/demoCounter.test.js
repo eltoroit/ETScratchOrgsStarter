@@ -74,7 +74,8 @@ describe("c-demo-counter", () => {
 		expect(Number(errorCounter.textContent)).toBe(1);
 	});
 
-	it("fails", () => {
-		expect(1).toBe(2);
-	});
+	// Test failures in Jest
+	// it("fails", () => {
+	// 	expect(1).toBe(2);
+	// });
 });

@@ -75,7 +75,7 @@ export default class LowLevelOS {
 		ET_Asserts.hasData({ value: path, message: 'path' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
 
-		if (config.verbose) Colors2.debug({ msg: Colors2.getPrettyJson({ obj: { msg: 'Writing file: ' + path, data } }) });
+		if (config.debug) Colors2.debug({ msg: Colors2.getPrettyJson({ obj: { msg: 'Writing file: ' + path, data } }) });
 		try {
 			await fs.writeFile(path, data);
 		} catch (ex) {
@@ -171,9 +171,9 @@ export default class LowLevelOS {
 			let response = {};
 
 			const forceResolve = () => {
-				process.stdout.unref();
-				process.stderr.unref();
-				process.unref();
+				execProcess.stdout.unref();
+				execProcess.stderr.unref();
+				execProcess.unref();
 				resolve();
 			};
 
@@ -223,38 +223,40 @@ export default class LowLevelOS {
 				}
 			};
 
-			const process = spawn(app, args, { detach: true, shell: true, cwd });
-			process.on('spawn', (...data) => {
-				if (config.debug && config.verbose) {
+			const execProcess = spawn(app, args, { detach: true, shell: true, cwd });
+			execProcess.on('spawn', (...data) => {
+				if (config.debug) {
 					report({ eventName: 'SPAWN', data });
 				}
 			});
 
-			process.on('error', (...data) => {
+			execProcess.on('error', (...data) => {
 				report({ eventName: 'ERROR', data });
 			});
 
-			process.stdout.on('data', (...data) => {
+			execProcess.stdout.on('data', (...data) => {
 				report({ eventName: 'STDOUT', data });
 			});
 
-			process.stderr.on('data', (...data) => {
+			execProcess.stderr.on('data', (...data) => {
 				report({ eventName: 'STDERR', data });
 			});
 
-			process.on('close', (code, signal) => {
+			execProcess.on('close', (code, signal) => {
 				report({ eventName: 'CLOSE', data: { code, signal } });
+				// Let ths process cool off, if running in debug mode. I saw that VS Code debugger chokes :-)
+				const isDebug = !!process.execArgv.find((arg) => arg.includes('--inspect'));
+				const timeout = isDebug ? 5e3 : 0;
+				if (isDebug) {
+					Colors2.debug({ msg: `Waiting ${timeout / 1000} seconds for the procees to cool off while the debugger catches up` });
+				}
 				setTimeout(() => {
-					// Let ths process cool off :-)
 					try {
-						ET_Asserts.equals({ expected: expectedCode, actual: code, message: 'Application did dot completed succesfully' });
 						resolve(response);
 					} catch (ex) {
-						let msg = 'Error executing app';
-						Logs2.reportException({ config, msg, ex });
 						reject(response);
 					}
-				}, 1e3);
+				}, timeout);
 			});
 		});
 	}

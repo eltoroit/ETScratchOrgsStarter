@@ -11,6 +11,20 @@
       "logFile": "${command:AskForLogFileName}",
       "stopOnEntry": true,
       "trace": true
+    },
+
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Create scratch org",
+      "args": ["--inspect", "${workspaceFolder}/@ELTOROIT/scripts/nodejs/orgBuilder.mjs"],
+      "runtimeExecutable": "node",
+      "skipFiles": [
+        "/Users/**",
+        "<node_internals>/**",
+        "/usr/local/lib/node_modules/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
     }
   ]
 }

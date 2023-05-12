@@ -120,6 +120,11 @@ export default class Colors {
 		console.log(colorBgBlack + colorBright + colorFgGreen + 'Task Completed' + colorReset);
 		console.log(colorBgBlack + colorBright + colorFgGreen + new Date() + colorReset);
 	}
+
+	static sfdxShowMessage({ msg }) {
+		ET_Asserts.hasData({ value: msg, message: 'msg' });
+		console.log(colorBgBlack + colorBright + colorFgCyan + msg + colorReset);
+	}
 }
 
 // Define variables

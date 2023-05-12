@@ -10,9 +10,12 @@ export default class SFDX {
 					await this[step]({ config });
 				} catch (ex) {
 					Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
+					if (config.SFDX.quitOnErrors) {
+						throw new Error('Quiting on errors!');
+					}
 				}
 			} else {
-				console.log(`Skipping ${step}`);
+				console.log(`*** *** *** *** NOT IMPLEMENTED: ${step}`);
 			}
 		}
 	}
@@ -20,47 +23,32 @@ export default class SFDX {
 	async validateETCopyData({ config }) {
 		config.currentStep = 'Validating ETCopyData';
 		if (config.SFDX.importData) {
-			Colors2.writeInstruction({ msg: config.currentStep });
-			try {
-				let command = 'sfdx plugins --core';
-				let logFile = 'etLogs/validateETCopyData.txt';
-				let result = await this._runSFDX({ config, command, logFile });
-				debugger;
-				let plugins = result.STDOUT.split('\n');
-				let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
-				if (etcd.length !== 1) {
-					let msg = 'Could not find plugin for ETCopyData installed';
-					Logs2.reportErrorMessage({ config, msg });
-					throw new Error(msg);
-				} else {
-					Colors2.success({ msg: etcd[0] });
-				}
-			} catch (ex) {
-				let msg = `${config.currentStep} failed`;
+			let command = 'sfdx plugins --core';
+			let logFile = 'etLogs/validateETCopyData.txt';
+			let result = await this._runSFDX({ config, command, logFile });
+			// Process results
+			let plugins = result.STDOUT.split('\n');
+			let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
+			if (etcd.length !== 1) {
+				let msg = 'Could not find plugin for ETCopyData installed';
 				Logs2.reportErrorMessage({ config, msg });
 				throw new Error(msg);
+			} else {
+				Colors2.success({ msg: etcd[0] });
 			}
 		} else {
-			Colors2.writeMessage({ msg: 'Skipping validating ETCopyData because data will not be imported' });
+			Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
 		}
 	}
 
 	async RunJest({ config }) {
-		config.currentStep = '*** Running JEST tests...';
+		config.currentStep = 'Running JEST tests';
 		if (config.SFDX.runJestTests) {
-			Colors2.sfdxShowStatus({ status: config.currentStep });
-			try {
-				let command = 'npm run test:unit:CICD';
-				let logFile = 'etLogs/jestTests.txt';
-				await this._runAndLog({ config, command, logFile });
-				Colors2.success({ msg: `${new Date()} - Completed succesfully` });
-			} catch (ex) {
-				let msg = `${config.currentStep} failed`;
-				Logs2.reportException({ config, msg, ex });
-				throw ex;
-			}
+			let command = 'npm run test:unit:CICD';
+			let logFile = 'etLogs/jestTests.txt';
+			await this._runAndLog({ config, command, logFile });
 		} else {
-			Colors2.sfdxShowStatus({ status: '*** JEST tests are being skipped!' });
+			Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
 		}
 	}
 
@@ -90,21 +78,22 @@ export default class SFDX {
 
 		const logResults = async () => {
 			let data = '';
-			debugger;
-			data += `${notification.currentStep}\n`;
-			data += `${notification.app} ${notification.args.join(' ')}\n`;
-			data += `${notification.cwd}\n`;
-			data += 'STDOUT\n';
-			data += `${notification.response.STDOUT}\n`;
-			data += 'STDERR\n';
-			data += `${notification.response.STDERR}\n`;
-			data += 'CLOSE\n';
+			data += `Step: ${notification.currentStep}\n`;
+			data += `Command: ${notification.app} ${notification.args.join(' ')}\n`;
+			data += '\n=== === === RESULT === === ===\n';
 			data += `${Colors2.getPrettyJson({ obj: notification.response.CLOSE })}\n`;
+			// data += `${notification.cwd}\n`;
+			data += '\n=== === === STDOUT === === ===\n';
+			data += `${notification.response.STDOUT}\n`;
+			data += '\n=== === === STDERR === === ===\n';
+			data += `${notification.response.STDERR}\n`;
 			await OS2.writeFile({ config, path: logFile, data });
 		};
 
 		try {
+			Colors2.sfdxShowStatus({ status: config.currentStep });
 			Colors2.sfdxShowCommand({ command });
+			Colors2.sfdxShowMessage({ msg: `${new Date()} | ${config.currentStep} | Started` });
 
 			command = command.split(' ');
 			let app = command.shift();
@@ -116,25 +105,36 @@ export default class SFDX {
 				cwd: config.root,
 				expectedCode: 0,
 				callbackAreWeDone: (data) => {
-					if (config.verbose) Colors2.debug({ msg: data.item });
+					if (config.debug) Colors2.debug({ msg: data.item });
 					notification = data;
 				},
 			});
 			debugger;
+			if (result.CLOSE.code !== 0) {
+				throw result;
+			}
 			logResults();
+			Colors2.success({ msg: `${new Date()} | ${config.currentStep} | Succesfully completed` });
 			return result;
 		} catch (ex) {
-			debugger;
 			logResults();
 			let msg = `${config.currentStep} failed`;
-			if (ex.stderr) {
-				Logs2.reportErrorMessage({ config, msg });
-				let lines = ex.stderr.split('\n');
-				lines.forEach((line) => {
-					Logs2.reportErrorMessage({ config, msg: line.trim() });
-				});
-			} else {
-				Logs2.reportException({ config, msg, ex });
+			Logs2.reportErrorMessage({ config, msg: `${new Date()} | ${config.currentStep} | Failed to execute` });
+			if (config.debug) {
+				if (ex.STDOUT && ex.STDERR) {
+					if (ex.STDOUT) {
+						ex.STDOUT.split('\n').forEach((line) => {
+							Logs2.reportErrorMessage({ config, msg: line.trim() });
+						});
+					}
+					if (ex.STDERR) {
+						ex.STDERR.split('\n').forEach((line) => {
+							Logs2.reportErrorMessage({ config, msg: line.trim() });
+						});
+					}
+				} else {
+					Logs2.reportException({ config, msg, ex });
+				}
 			}
 			throw new Error(msg);
 		}

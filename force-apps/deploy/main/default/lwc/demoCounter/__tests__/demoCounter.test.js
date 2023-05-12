@@ -74,8 +74,7 @@ describe("c-demo-counter", () => {
 		expect(Number(errorCounter.textContent)).toBe(1);
 	});
 
-	// eslint-disable-next-line jest/no-commented-out-tests
-	// it("fails", () => {
-	// 	expect(1).toBe(2);
-	// });
+	it("fails", () => {
+		expect(1).toBe(2);
+	});
 });

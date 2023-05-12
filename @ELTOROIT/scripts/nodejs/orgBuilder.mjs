@@ -6,15 +6,10 @@ import { parse } from 'jsonc-parser';
 
 const config = {
 	errors: [],
-	cicd: false,
+	CICD: false,
 	debug: false,
-	verbose: false,
-	resultsTofile: true,
-	checkUrlExists: true,
-	executeManualChecks: false,
 	deployPage: '/lightning/setup/DeployStatus/home',
 	steps: [
-		// No parameters sent, then do everything
 		'RunJest',
 		'BackupAlias',
 		'CreateScratchOrg',
@@ -48,7 +43,7 @@ export default class OrgBuilder {
 
 	async start() {
 		Colors2.clearScreen();
-		config.cicd = !!process.env.ET_CICD;
+		config.CICD = !!process.env.ET_CICD;
 		this.sfdx = new SFDX(config);
 		config.root = await OS2.getFullPath({ config, relativePath: '.' });
 		await this._readConfigFile();

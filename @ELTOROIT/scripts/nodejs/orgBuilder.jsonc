@@ -1,53 +1,27 @@
 {
-	// Alias for scratch org
-	"alias": "soDEMO",
-	// How long will the scratch org live (max 30)
-	"days": 1,
-	// Install required packages before pushing.
-	// Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]
-	"packages": [],
-	// Permission Sets to assign
-	"permSets": ["psTest"],
-	// Prepare scratch org for deployment. Some metadata needs to be deployed first.
-	"prepareOrg": ["./@ELTOROIT/metadata/API/"],
-	// Path to Apex code to execute anonymously, multiple files can be executed at each step, if multiple Apex transactions are needed
-	"execAnonApexBeforePush": [],
+	"alias": "soDEMO", // Alias for scratch org
+	"days": 1, // How long will the scratch org live (max 30)
+	"importData": true, // Do you want to use ETCopyData to import data?
+	"quitOnErrors": false, // Quit on errors?
+	"userOnScreen": true, // Automated Script? Can I prompt the user for a key to continue?
+	"showDeployPage": true, // Open browser page to show deployment progress
+	"runJestTests": true, // Do you want to run JEST tests in this project?
+	"pauseToCheckOrg": false, // Stop to validate org was succesfully created? Sometimes Sslesforce fails when creating an org and shows the login screen rather than opening an org.
+	"backupAlias": true, // Backup alias, in case you need to go back :-)
+	"performDeploy": true, // Deploy code before pushing it? I have seen some issues with deployments of communities that get solved like this
+	"runApexTests": true, // Do you want to run APEX tests in this new org before starting?
+	"generatePassword": true, // Do you need a password for the user name? You may need this depening on the use of the new scratch org
+	"permSets": ["psTest"], // Permission Sets to assign
+	"adminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml", // Deploy Admin standard profile (helps set the visible applications, for example)
+	"execAnonApexBeforePush": [], // Path to Apex code to execute anonymously, multiple files can be executed at each step, if multiple Apex transactions are needed
 	"execAnonApexAfterPush": ["./@ELTOROIT/scripts/apex/SetUserRecord.apex"],
 	"execAnonApexAfterData": [],
-	// Is there any additional manual configuration required BEFORE/AFTER pushing metadata?
-	// Sample: ["/lightning/setup/SalesforceMobileAppQuickStart/home"]
-	"path2setupMetadataBefore": [],
+	"packages": [], // Install required packages before pushing. Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]
+	"prepareOrg": ["./@ELTOROIT/metadata/API/"], // Prepare scratch org for deployment. Some metadata needs to be deployed first.
+	"path2setupMetadataBefore": [], // Is there any additional manual configuration required BEFORE/AFTER pushing metadata? Sample: ["/lightning/setup/SalesforceMobileAppQuickStart/home"]
 	"path2setupMetadataAfter": [],
-	// Do you have a community to publish?
-	// Sample: publishCommunityName="Community Name"
-	"publishCommunityName": "",
-	// What is the sandbox to deply to?
-	// Sample: deployToSandbox="Sandbox sfdx alias"
-	"deployToSandbox": "",
-	// Sample: deployToSandboxFolder="./force-apps/deploy"
-	"deployToSandboxFolder": "",
-	// If using ETCopyData, where is the data?
-	"etcopydataFolder": "./@ELTOROIT/data",
-	// Deploy Admin standard profile (helps set the visible apprlications, for example)
-	"adminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml",
-	// Do you want to use ETCopyData to import data?
-	"importData": true,
-	// Quit on errors?
-	"quitOnErrors": true,
-	// Automated Script? Can I prompt the user for a key to continue?
-	"userOnScreen": true,
-	// Open browser page to show deployment progress
-	"showDeployPage": true,
-	// Do you want to run JEST tests in this project?
-	"runJestTests": true,
-	// Stop to validate org was succesfully created? Sometimes Sslesforce fails when creating an org and shows the login screen rather than opening an org.
-	"pauseToCheckOrg": false,
-	// Backup alias, in case you need to go back :-)
-	"backupAlias": true,
-	// Deploy code before pushing it? I have seen some issues with deployments of communities that get solved like this
-	"performDeploy": true,
-	// Do you want to run APEX tests in this new org before starting?
-	"runApexTests": true,
-	// Do you need a password for the user name? You may need this depening on the use of the new scratch org
-	"generatePassword": true
+	"publishCommunityName": "", // Do you have a community to publish? Sample: publishCommunityName="Community Name"
+	"deployToSandbox": "", // What is the sandbox to deply to? Sample: deployToSandbox="Sandbox sfdx alias"
+	"deployToSandboxFolder": "", // Sample: deployToSandboxFolder="./force-apps/deploy"
+	"etcopydataFolder": "./@ELTOROIT/data" // If using ETCopyData, where is the data?
 }

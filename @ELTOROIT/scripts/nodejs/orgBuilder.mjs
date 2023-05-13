@@ -6,8 +6,8 @@ import { parse } from 'jsonc-parser';
 
 const config = {
 	errors: [],
-	CICD: false,
 	debug: false,
+	commands: [],
 	deployPage: '/lightning/setup/DeployStatus/home',
 	steps: [
 		'BeforeOrg_ValidateETCopyData',
@@ -41,7 +41,6 @@ export default class OrgBuilder {
 
 	async start() {
 		Colors2.clearScreen();
-		config.CICD = !!process.env.ET_CICD;
 		this.sfdx = new SFDX(config);
 		config.root = await OS2.getFullPath({ config, relativePath: '.' });
 		await this._readConfigFile();

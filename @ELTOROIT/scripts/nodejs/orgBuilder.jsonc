@@ -1,28 +1,28 @@
 {
 	"alias": "soDEMO",
 	"days": 1,
-	"importData": true, // Do you want to use ETCopyData to import data?
-	"runJestTests": false,
-	"createScratchOrg": false,
-	"quitOnErrors": false,
-	// "userOnScreen": true, // Automated Script? Can I prompt the user for a key to continue?
-	"showDeployPage": true, // Open browser page to show deployment progress
-	"pauseToCheckOrg": false, // Stop to validate org was succesfully created? Sometimes Sslesforce fails when creating an org and shows the login screen rather than opening an org.
-	"backupAlias": true, // Backup alias, in case you need to go back :-)
-	"performDeploy": true, // Deploy code before pushing it? I have seen some issues with deployments of communities that get solved like this
-	"runApexTests": true, // Do you want to run APEX tests in this new org before starting?
-	"generatePassword": true, // Do you need a password for the user name? You may need this depening on the use of the new scratch org
-	"permSets": ["psTest"], // Permission Sets to assign
-	"adminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml", // Deploy Admin standard profile (helps set the visible applications, for example)
-	"execAnonApexBeforePush": [], // Path to Apex code to execute anonymously, multiple files can be executed at each step, if multiple Apex transactions are needed
-	"execAnonApexAfterPush": ["./@ELTOROIT/scripts/apex/SetUserRecord.apex"],
-	"execAnonApexAfterData": [],
-	"packages": [], // Install required packages before pushing. Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]
-	"prepareOrg": ["./@ELTOROIT/metadata/API/"], // Prepare scratch org for deployment. Some metadata needs to be deployed first.
-	"path2setupMetadataBefore": [], // Is there any additional manual configuration required BEFORE/AFTER pushing metadata? Sample: ["/lightning/setup/SalesforceMobileAppQuickStart/home"]
-	"path2setupMetadataAfter": [],
-	"publishCommunityName": "", // Do you have a community to publish? Sample: publishCommunityName="Community Name"
-	"deployToSandbox": "", // What is the sandbox to deply to? Sample: deployToSandbox="Sandbox sfdx alias"
-	"deployToSandboxFolder": "", // Sample: deployToSandboxFolder="./force-apps/deploy"
-	"etcopydataFolder": "./@ELTOROIT/data" // If using ETCopyData, where is the data?
+	"QuitOnErrors": false,
+	"UserOnScreen": true, // Can I prompt the user to continue? On CICD will be false
+	"BeforeOrg_ValidateETCopyData": true,
+	"BeforeOrg_RunJestTests": true,
+	"BeforeOrg_BackupAlias": true, // Backup alias, in case you need to go back :-)
+	"CreateScratchOrg": true,
+	"BeforePush_PauseToCheckOrg": true, // Stop to validate org was succesfully created? Sometimes Salesforce fails when creating an org and shows the login screen rather than opening an org.
+	"BeforePush_ShowDeployPage": true, // Open browser page to show deployment progress
+	"BeforePush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Prepare scratch org for deployment. Some metadata needs to be deployed first.
+	"BeforePush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"], // Is there any additional manual configuration required BEFORE/AFTER pushing metadata? Sample: ["/lightning/setup/SalesforceMobileAppQuickStart/home"]
+	"BeforePush_ExecAnonApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"], // Path to Apex code to execute anonymously, multiple files can be executed at each step, if multiple Apex transactions are needed
+	"BeforePush_InstallPackages": ["04t41000001HSJC", "04t4V000001duHGQAY"], // Install required packages before pushing. Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]
+	"PushMetadata": true,
+	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"], // Is there any additional manual configuration required BEFORE/AFTER pushing metadata? Sample: ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
+	"AfterPush_ExecuteApex": ["@ELTOROIT/scripts/apex/SetUserRecord.apex"],
+	"AfterPush_AssignPermissionSets": ["psTest"], // Permission Sets to assign
+	"AfterPush_DeployAdminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml", // Deploy Admin standard profile (helps set the visible applications, for example)
+	"ETCopyData": "./@ELTOROIT/data", // If using ETCopyData, where is the data?
+	"AfterData_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"], // Path to Apex code to execute anonymously, multiple files can be executed at each step, if multiple Apex transactions are needed
+	"AfterData_RunApexTests": true, // Do you want to run APEX tests in this new org before starting?
+	"AfterData_PublishCommunityName": "ABC", // Do you have a community to publish? Sample: publishCommunityName="Community Name"
+	"AfterData_GeneratePassword": true, // Do you need a password for the user name? You may need this depening on the use of the new scratch org
+	"DeployToSandbox": { "alias": "DEX450", "folder": "./force-apps/deploy", "runTests": true },
+	"ShowFinalSuccess": true
 }

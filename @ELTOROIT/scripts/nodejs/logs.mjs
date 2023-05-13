@@ -1,6 +1,8 @@
 // import OS2 from "./lowLevelOs.js";
 import Colors2 from './colors.mjs';
 import ET_Asserts from './etAsserts.mjs';
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 
 export default class Logs {
 	static reportError({ config, obj }) {
@@ -32,5 +34,31 @@ export default class Logs {
 
 		config.errors.push({ test: config.currentStep, error: msg });
 		Colors2.error({ msg, offset: 1 });
+	}
+
+	static async promptYesNo({ config, question }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		ET_Asserts.hasData({ value: question, message: 'question' });
+
+		Colors2.promptMsg({ msg: question });
+		const rl = readline.createInterface({ input, output });
+
+		// Can't use async/await because I need a loop
+		return new Promise((resolve) => {
+			async function loop() {
+				const answer = await rl.question(Colors2.getPromptMsg({ msg: '[Y/N] > ' }));
+				if (answer[0].toUpperCase() === 'Y') {
+					rl.close();
+					resolve(true);
+				} else if (answer[0].toUpperCase() === 'N') {
+					rl.close();
+					resolve(false);
+				} else {
+					loop();
+				}
+			}
+
+			loop();
+		});
 	}
 }

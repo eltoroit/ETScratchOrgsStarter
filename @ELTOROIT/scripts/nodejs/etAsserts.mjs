@@ -10,7 +10,7 @@ export default class ET_Asserts {
 	}
 
 	static hasData({ value, message }) {
-		if (!["string", "number", "boolean"].includes(typeof value)) {
+		if (!['string', 'number', 'boolean'].includes(typeof value)) {
 			if (!value) {
 				message = `Assertion failed | Validating if data is present | ${message}`;
 				throw new Error(JSON.stringify({ value, message }));
@@ -30,7 +30,7 @@ export default class ET_Asserts {
 	}
 
 	static #assert({ trueValue, message }) {
-		if (typeof trueValue !== "boolean") {
+		if (typeof trueValue !== 'boolean') {
 			message = `Assertion failed | Boolean expression was expected! [${trueValue}] | ${message}`;
 			throw new Error(JSON.stringify({ trueValue, message }));
 		}

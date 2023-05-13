@@ -1,17 +1,28 @@
 import Logs2 from './logs.mjs';
 import Colors2 from './colors.mjs';
 import OS2 from './lowLevelOs.mjs';
+import ET_Asserts from './etAsserts.mjs';
 
 export default class SFDX {
 	async processSteps({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+
 		for (const step of config.steps) {
+			// console.log(`*** *** Step: ${step}`);
 			if (this[step]) {
 				try {
 					await this[step]({ config });
 				} catch (ex) {
 					Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
-					if (config.SFDX.quitOnErrors) {
-						throw new Error('Quiting on errors!');
+					if (config.SFDX.QuitOnErrors) {
+						Logs2.reportErrorMessage({ config, msg: '' });
+						Logs2.reportErrorMessage({ config, msg: '' });
+						Logs2.reportErrorMessage({ config, msg: '' });
+						Logs2.reportErrorMessage({ config, msg: 'QuitOnErrors is set to true, aborting process!' });
+						Logs2.reportErrorMessage({ config, msg: '' });
+						Logs2.reportErrorMessage({ config, msg: '' });
+						Logs2.reportErrorMessage({ config, msg: '' });
+						process.exit(-1);
 					}
 				}
 			} else {
@@ -20,13 +31,16 @@ export default class SFDX {
 		}
 	}
 
-	async validateETCopyData({ config }) {
-		config.currentStep = 'Validating ETCopyData';
-		let command = 'sfdx plugins --core';
-		let logFile = 'validateETCopyData.txt';
-		let result = await this._runSFDX({ isGoingToRun: config.SFDX.importData, config, command, logFile });
+	async BeforeOrg_ValidateETCopyData({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '01. Validating ETCopyData';
+		command = 'sfdx plugins --core';
+		logFile = 'BeforeOrg_ValidateETCopyData.txt';
+		let result = await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_ValidateETCopyData, config, command, logFile });
 		// Process results
-		if (config.SFDX.importData) {
+		if (config.SFDX.BeforeOrg_ValidateETCopyData) {
 			let plugins = result.STDOUT.split('\n');
 			let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
 			if (etcd.length !== 1) {
@@ -39,56 +53,433 @@ export default class SFDX {
 		}
 	}
 
-	async RunJest({ config }) {
-		config.currentStep = 'Running JEST tests';
-		let command = 'npm run test:unit:CICD';
-		let logFile = 'jestTests.txt';
-		await this._runAndLog({ isGoingToRun: config.SFDX.runJestTests, config, command, logFile });
+	async BeforeOrg_RunJestTests({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '02. Running JEST tests';
+		command = 'npm run test:unit:CICD';
+		logFile = 'BeforeOrg_RunJestTests.txt';
+		await this._runAndLog({ isGoingToRun: config.SFDX.BeforeOrg_RunJestTests, config, command, logFile });
 	}
 
-	async BackupAlias({ config }) {
-		config.currentStep = 'Backup this org alias (Get aliases)';
-		let command = 'sfdx force:alias:list --json';
-		let logFile = 'aliasListAll.json';
-		let result = await this._runSFDX({ isGoingToRun: config.SFDX.backupAlias, config, command, logFile });
+	async BeforeOrg_BackupAlias({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '03. Backup current org alias (Find orgs) (1/2)';
+		command = 'sfdx force:alias:list --json';
+		logFile = 'BeforeOrg_BackupAlias_List.json';
+		let result = await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
 		// Process results
-		if (config.SFDX.backupAlias) {
+		if (config.SFDX.BeforeOrg_BackupAlias) {
 			let orgs = JSON.parse(result.STDOUT).result;
 			let org = orgs.find((org) => org.alias === config.SFDX.alias);
-			config.currentStep = 'Backup this org alias (Create bakup alias)';
-			let command = `sfdx alias:set ${config.SFDX.alias}.bak=${org.value}`;
-			let logFile = 'aliasListSet.txt';
-			await this._runSFDX({ isGoingToRun: config.SFDX.backupAlias, config, command, logFile });
+			config.currentStep = '03. Backup current org alias (Create backup alias) (2/2)';
+			command = `sfdx alias:set ${config.SFDX.alias}.bak=${org.value}`;
+			logFile = 'BeforeOrg_BackupAlias_Set.txt';
+			await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
 		}
 	}
 
 	async CreateScratchOrg({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		config.currentStep = 'Create scratch org (Create)';
+		config.currentStep = '04. Create scratch org (Create new org) (1/2)';
 		command = `sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername --setalias "${config.SFDX.alias}" -d "${config.SFDX.days}"`;
-		logFile = 'createScratchOrgCreate.txt';
-		await this._runAndLog({ isGoingToRun: config.SFDX.createScratchOrg, config, command, logFile });
+		logFile = 'CreateScratchOrg_Create.txt';
+		await this._runSFDX({ isGoingToRun: config.SFDX.CreateScratchOrg, config, command, logFile });
 
-		config.currentStep = 'Create scratch org (Set as default)';
-		command = `sfdx force:config:set defaultusername="${config.SFDX.alias}"`;
-		logFile = 'createScratchOrgDefault.txt';
-		await this._runAndLog({ isGoingToRun: config.SFDX.createScratchOrg, config, command, logFile });
+		if (config.SFDX.CreateScratchOrg) {
+			config.currentStep = '04. Create scratch org (Set as default) (2/2)';
+			command = `sfdx force:config:set defaultusername="${config.SFDX.alias}"`;
+			logFile = 'CreateScratchOrg_MakeDefault.txt';
+			await this._runSFDX({ isGoingToRun: config.SFDX.CreateScratchOrg, config, command, logFile });
+		}
+	}
+
+	async BeforePush_PauseToCheckOrg({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '05. Pause to check org';
+		command = 'sfdx force:org:open';
+		logFile = 'BeforePush_PauseToCheckOrg.txt';
+		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_PauseToCheckOrg, config, command, logFile });
+		if (config.SFDX.BeforePush_PauseToCheckOrg) {
+			let result = await Logs2.promptYesNo({ config, question: 'Was the org created succesfully?' });
+			if (!result) {
+				throw new Error(`${config.currentStep} failed`);
+			}
+		}
+	}
+
+	async BeforePush_ShowDeployPage({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '06. Open deploy page to watch deployments';
+		command = `sfdx force:org:open --path="${config.deployPage}"`;
+		logFile = 'BeforePush_ShowDeployPage.txt';
+		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_ShowDeployPage, config, command, logFile });
+	}
+
+	async BeforePush_PrepareOrg({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '07. Prepare the org before deployment';
+		commandParts = {
+			pre: 'sfdx force:mdapi:deploy --deploydir "',
+			post: '" --json --wait 30',
+		};
+		logFileParts = {
+			pre: 'BeforePush_PrepareOrg',
+			post: '.json',
+		};
+		listValues = config.SFDX.BeforePush_PrepareOrg;
+		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+	}
+
+	async BeforePush_ManualMetadata({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '08. Open page(s) to manually configure org (Before pushing)';
+		if (config.SFDX.UserOnScreen) {
+			commandParts = {
+				pre: 'sfdx force:org:open --path "',
+				post: '" --json',
+			};
+			logFileParts = {
+				pre: 'BeforePush_ManualMetadata',
+				post: '.json',
+			};
+			listValues = config.SFDX.BeforePush_ManualMetadata;
+			isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+			await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+			if (isGoingToRun) {
+				let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on every page?' });
+				if (!result) {
+					throw new Error(`${config.currentStep} failed`);
+				}
+			}
+		} else {
+			Logs2.reportErrorMessage({ config, msg: 'Step ignored because there is no user in the screen, running in CICD mode' });
+		}
+	}
+
+	async BeforePush_ExecAnonApex({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '09. Execute Apex Anonymous code (Before Push)';
+		commandParts = {
+			pre: 'sfdx apex:run -f "',
+			post: '" --json',
+		};
+		logFileParts = {
+			pre: 'BeforePush_ExecAnonApex',
+			post: '.json',
+		};
+		listValues = config.SFDX.BeforePush_ExecAnonApex;
+		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+	}
+
+	async BeforePush_InstallPackages({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '10. Install Packages (Before Push)';
+		commandParts = {
+			pre: 'sfdx package:install --apex-compile=all --package "',
+			post: '" --wait=30 --no-prompt',
+		};
+		logFileParts = {
+			pre: 'BeforePush_InstallPackages',
+			post: '.json',
+		};
+		listValues = config.SFDX.BeforePush_InstallPackages;
+		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+	}
+
+	async PushMetadata({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '11. Pushing metadata...';
+		command = 'sfdx force:source:push --forceoverwrite --json';
+		logFile = 'PushMetadata.txt';
+		await this._runSFDX({ isGoingToRun: config.SFDX.PushMetadata, config, command, logFile });
+	}
+
+	async AfterPush_ManualMetadata({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '12. Open page to manually configure org (After pushing)';
+		if (config.SFDX.UserOnScreen) {
+			commandParts = {
+				pre: 'sfdx force:org:open --path "',
+				post: '" --json',
+			};
+			logFileParts = {
+				pre: 'AfterPush_ManualMetadata',
+				post: '.json',
+			};
+			listValues = config.SFDX.AfterPush_ManualMetadata;
+			isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+			await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+			if (isGoingToRun) {
+				let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on every page?' });
+				if (!result) {
+					throw new Error(`${config.currentStep} failed`);
+				}
+			}
+		} else {
+			Logs2.reportErrorMessage({ config, msg: 'Step ignored because there is no user in the screen, running in CICD mode' });
+		}
+	}
+
+	async AfterPush_ExecuteApex({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '13. Execute Apex Anonymous code (After Push)';
+		commandParts = {
+			pre: 'sfdx apex:run -f "',
+			post: '" --json',
+		};
+		logFileParts = {
+			pre: 'AfterPush_ExecuteApex',
+			post: '.json',
+		};
+		listValues = config.SFDX.AfterPush_ExecuteApex;
+		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+	}
+
+	async AfterPush_AssignPermissionSets({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '14. Assigning permission set(s) to your user';
+		commandParts = {
+			pre: 'sfdx force:user:permset:assign --permsetname "',
+			post: '" --json',
+		};
+		logFileParts = {
+			pre: 'AfterPush_AssignPermissionSets',
+			post: '.json',
+		};
+		listValues = config.SFDX.AfterPush_AssignPermissionSets;
+		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+	}
+
+	async AfterPush_DeployAdminProfile({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '15. Deploying "Admin" standard profile...';
+		command = `sfdx force:source:deploy -p "${config.SFDX.AfterPush_DeployAdminProfile}"`;
+		logFile = 'PushMetadata.txt';
+
+		// Move .forceignore (hide it)
+		let errors = [];
+		const pathOriginal = '.forceignore';
+		const pathHidden = 'etLogs/.forceignore';
+		try {
+			await OS2.moveFile({ config, oldPath: pathOriginal, newPath: pathHidden });
+		} catch (ex) {
+			errors.push(ex);
+		}
+
+		// Deploy admin profile
+		try {
+			await this._runSFDX({ isGoingToRun: config.SFDX.AfterPush_DeployAdminProfile, config, command, logFile });
+		} catch (ex) {
+			errors.push(ex);
+		}
+
+		// Move .forceignore (restore it)
+		try {
+			await OS2.moveFile({ config, oldPath: pathHidden, newPath: pathOriginal });
+		} catch (ex) {
+			errors.push(ex);
+		}
+
+		if (errors.length > 0) {
+			throw errors;
+		}
+	}
+
+	async ETCopyData({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '16. Load data using ETCopyData plugin';
+		// sfdx ETCopyData:delete --orgdestination=sbTVB4S_CICD --configfolder "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// sfdx ETCopyData:export --configfolder "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// sfdx ETCopyData:import --configfolder "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		command = `sfdx ETCopyData:import --configfolder "${config.SFDX.ETCopyData}" --loglevel info --json --orgsource="${config.SFDX.alias}" --orgdestination="${config.SFDX.alias}"`;
+		logFile = 'ETCopyData.txt';
+		await this._runSFDX({ isGoingToRun: config.SFDX.ETCopyData, config, command, logFile });
+	}
+
+	async AfterData_ExecuteApex({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFileParts, commandParts, listValues, isGoingToRun;
+
+		config.currentStep = '17. Execute Apex Anonymous code (After data)';
+		commandParts = {
+			pre: 'sfdx apex:run -f "',
+			post: '" --json',
+		};
+		logFileParts = {
+			pre: 'AfterData_ExecuteApex',
+			post: '.json',
+		};
+		listValues = config.SFDX.AfterData_ExecuteApex;
+		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
+		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+	}
+
+	async AfterData_RunApexTests({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '18. Runing Apex tests';
+		command = 'sfdx apex:run:test --code-coverage --json --result-format=json --wait=60';
+		logFile = 'AfterData_RunApexTests.json';
+		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_RunApexTests, config, command, logFile });
+	}
+
+	async AfterData_PublishCommunityName({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '19. Publishing community';
+		command = `sfdx community:publish --name "${config.SFDX.AfterData_PublishCommunityName}"`;
+		logFile = 'AfterData_PublishCommunityName.json';
+		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_PublishCommunityName, config, command, logFile });
+	}
+
+	async AfterData_GeneratePassword({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		config.currentStep = '20. Generate Password (1/2)';
+		command = 'sfdx force:user:password:generate --json';
+		logFile = 'AfterData_GeneratePassword.json';
+		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
+
+		config.currentStep = '20. Display Password (2/2)';
+		command = 'sfdx org:display:user --json';
+		logFile = 'AfterData_GeneratePassword.json';
+		const result = await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
+		if (config.SFDX.AfterData_GeneratePassword && result.CLOSE.code === 0) {
+			Colors2.sfdxShowMessage({ msg: Colors2.getPrettyJson({ obj: JSON.parse(result.STDOUT).result }) });
+		}
+	}
+
+	async DeployToSandbox({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		if (config.SFDX.DeployToSandbox) {
+			config.currentStep = '21. Deploy to sandbox - Open Deploy page (1/3)';
+			command = `sfdx org open --target-org="${config.SFDX.DeployToSandbox.alias}" --path=${config.deployPage}`;
+			logFile = 'DeployToSandbox_OpenPage.json';
+			await this._runSFDX({ isGoingToRun: config.SFDX.DeployToSandbox, config, command, logFile });
+
+			config.currentStep = '21. Deploy to sandbox - Perform Deployment (2/3)';
+			command = `sfdx force:source:deploy --sourcepath="${config.SFDX.DeployToSandbox.folder}" --json --loglevel=trace --targetusername="${config.SFDX.DeployToSandbox.alias}"`;
+			logFile = 'DeployToSandbox_Deployment.json';
+			await this._runSFDX({ isGoingToRun: config.SFDX.DeployToSandbox, config, command, logFile });
+
+			config.currentStep = '21. Deploy to sandbox - Run tests (3/3)';
+			command = `sfdx apex:run:test --code-coverage --json --result-format=json --wait=60 --targetusername="${config.SFDX.DeployToSandbox.alias}"`;
+			logFile = 'DeployToSandbox_Tests.json';
+			await this._runSFDX({ isGoingToRun: config.SFDX.DeployToSandbox, config, command, logFile });
+		} else {
+			config.currentStep = '21. Deploy to sandbox';
+			this._showStepSkipped({ config });
+		}
+	}
+
+	async ShowFinalSuccess({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+
+		if (config.SFDX.ShowFinalSuccess) {
+			Colors2.success({ msg: '' });
+			Colors2.success({ msg: '*** *** *** *** *** *** *** *** ***' });
+			Colors2.success({ msg: '*** ***  Process completed  *** ***' });
+			Colors2.success({ msg: '*** *** *** *** *** *** *** *** ***' });
+		}
+	}
+
+	async _runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts }) {
+		ET_Asserts.hasData({ value: isGoingToRun, message: 'isGoingToRun' });
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		ET_Asserts.hasData({ value: commandParts, message: 'commandParts' });
+		ET_Asserts.hasData({ value: commandParts.pre, message: 'commandParts.pre' });
+		ET_Asserts.hasData({ value: commandParts.post, message: 'commandParts.post' });
+		ET_Asserts.hasData({ value: logFileParts, message: 'logFileParts' });
+		ET_Asserts.hasData({ value: logFileParts.pre, message: 'logFileParts.pre' });
+		ET_Asserts.hasData({ value: logFileParts.post, message: 'logFileParts.post' });
+		let logFile, command;
+
+		if (isGoingToRun) {
+			if (listValues.length > 0) {
+				let errors = [];
+				let tmpCurrentStep = config.currentStep;
+				for (let idx = 0; idx < listValues.length; idx++) {
+					try {
+						config.currentStep = `${tmpCurrentStep} [${listValues[idx]}] (${idx + 1}/${listValues.length})`;
+						command = `${commandParts.pre}${listValues[idx]}${commandParts.post}`;
+						logFile = `${logFileParts.pre}_${idx + 1}${logFileParts.post}`;
+						await this._runSFDX({ isGoingToRun, config, command, logFile });
+					} catch (ex) {
+						if (config.SFDX.QuitOnErrors) {
+							config.currentStep = tmpCurrentStep;
+							throw ex;
+						} else {
+							errors.push(ex);
+						}
+					}
+				}
+				config.currentStep = tmpCurrentStep;
+				if (errors.length > 0) {
+					throw errors;
+				}
+			} else {
+				this._showStepSkipped({ config });
+			}
+		} else {
+			this._showStepSkipped({ config });
+		}
 	}
 
 	async _runSFDX({ isGoingToRun, config, command, logFile }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		ET_Asserts.hasData({ value: command, message: 'command' });
+		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
+
 		if (!command.startsWith(command)) command = `sfdx ${command}`;
 		return await this._runAndLog({ isGoingToRun, config, command, logFile });
 	}
 
 	async _runAndLog({ isGoingToRun, config, command, logFile }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		ET_Asserts.hasData({ value: command, message: 'command' });
+		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
 		let result = null;
 		let notification = null;
-
-		if (!isGoingToRun) {
-			Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
-			return;
-		}
 
 		const logResults = async () => {
 			let data = '';
@@ -105,12 +496,20 @@ export default class SFDX {
 				data += '\n=== === === STDERR === === ===\n';
 				data += `${notification.response.STDERR}\n`;
 			}
+			// Make sure all new lines are actually posted on the file.
+			data = data.replaceAll('\\n', '\n');
 
 			let path = `${config.rootLogs}/${new Date().getTime()}_${logFile}`;
 			await OS2.writeFile({ config, path, data });
 		};
 
+		if (!isGoingToRun) {
+			this._showStepSkipped({ config });
+			return;
+		}
+
 		try {
+			Colors2.sfdxShowStatus({ status: '' });
 			Colors2.sfdxShowStatus({ status: config.currentStep });
 			Colors2.sfdxShowCommand({ command });
 			Colors2.sfdxShowMessage({ msg: `${new Date()} | ${config.currentStep} | Started` });
@@ -132,11 +531,11 @@ export default class SFDX {
 			if (result.CLOSE.code !== 0) {
 				throw result;
 			}
-			logResults();
+			await logResults();
 			Colors2.success({ msg: `${new Date()} | ${config.currentStep} | Succesfully completed` });
 			return result;
 		} catch (ex) {
-			logResults();
+			await logResults();
 			let msg = `${config.currentStep} failed`;
 			Logs2.reportErrorMessage({ config, msg: `${new Date()} | ${config.currentStep} | Failed to execute` });
 			if (config.debug) {
@@ -158,351 +557,11 @@ export default class SFDX {
 			throw new Error(msg);
 		}
 	}
+
+	_showStepSkipped({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+
+		Colors2.sfdxShowStatus({ status: '' });
+		Colors2.sfdxShowStatus({ status: `${config.currentStep} (Skipped)` });
+	}
 }
-
-// function et_sfdxPush(){
-// 	showStatus "*** Pushing metadata to scratch Org..."
-// 	showCommand "sfdx $*"
-// 	etFile=etLogs/push.json
-// 	showCommand "Push logs are here: $etFile"
-// 	sfdx $* >> $etFile
-// 	local resultcode=$?
-// 	if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// 		cat $etFile
-// 	fi
-// 	if [[ $resultcode -ne 0 ]]; then
-// 		ReportError
-// 	else
-// 		showComplete
-// 	fi
-// }
-// function et_sfdxExecuteApex(){
-// 	showCommand "sfdx force:apex:execute -f "$1" --json >> $2"
-// 	sfdx force:apex:execute -f "$1" --json > $2
-// 	local resultcode=$?
-// 	if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// 		cat $2
-// 	fi
-// 	if [[ $resultcode -ne 0 ]]; then
-// 		ReportError
-// 	else
-// 		# check for apex compilation success
-// 		COMPILE_SUCCESS=`cat $2 | jq -r .result.compiled`
-// 		if [ $COMPILE_SUCCESS != "true" ]
-// 		then
-// 			# The result json contains a terse error description without too much noise
-// 			cat "$2" | jq -r .result
-// 			ReportError
-// 		else
-// 			# Show execution output
-// 			cat "$2" | jq -r .result.logs
-// 			# check for apex execution success
-// 			EXECUTION_SUCCESS=`cat "$2" | jq -r .result.success`
-// 			if [ $EXECUTION_SUCCESS != "true" ]
-// 			then
-// 				# Returning just the logs value will mean it renders correctly in terminal without escaped characters
-// 				cat "$2" | jq -r .result | jq 'del(.logs)'
-// 				ReportError
-// 			else
-// 				showComplete
-// 			fi
-// 		fi
-// 	fi
-// }
-// function et_sfdxDeploy(){
-// 	showStatus "*** Deploying metadata ..."
-// 	showCommand "sfdx $*"
-// 	etFile=etLogs/deploy.json
-// 	showCommand "Deploy logs are here: $etFile"
-// 	sfdx $* >> $etFile
-// 	local resultcode=$?
-// 	if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// 		cat $etFile
-// 	fi
-// 	if [[ $resultcode -ne 0 ]]; then
-// 		ReportError
-// 	else
-// 		showComplete
-// 	fi
-// }
-// function jq_sfdxGeneratePassword() {
-// 	et_sfdx force:user:password:generate --json
-// 	et_sfdx force:user:display --json
-
-// 	# https://github.com/forcedotcom/cli/issues/417
-// 	# Display has a bug where the password is encripted on display and can't be shown.
-// 	# Issue has been fixed, so no need for this anymore
-// 	# showCommand "Generates Password"
-// 	# etFile=etLogs/userInfo.json
-// 	# etFileTemp=$etFile.tmp
-// 	# sfdx force:user:password:generate --json > $etFileTemp
-// 	# sfdx force:user:display --json > $etFile
-// 	# pwd=$(jq -r '.result.password' $etFileTemp)
-// 	# jq --arg pwd "$pwd" '.result.password = $pwd' $etFile > $etFileTemp && mv $etFileTemp $etFile
-// 	# cat $etFile | jq .
-// }
-// function jq_sfdxRunApexTests() {
-// 	showCommand "sfdx $*"
-// 	etFile="etLogs/$APEX_TEST_LOG_FILENAME.json"
-// 	sfdx $* >> $etFile
-// 	local resultcode=$?
-// 	if [[ $resultcode -ne 0 ]]; then
-// 		if [[ "$AUTOMATED_PROCESS" = true ]]; then
-// 			cat $etFile
-// 		else
-// 			cat $etFile | jq "del(.result.tests, .result.coverage)"
-// 		fi
-// 		printf "\033[0;31m\n"
-// 		printf "Tests run, but they failed!\n"
-// 		if [[ "$QUIT_ON_ERRORS" = true ]]; then
-// 			if [[ "$USER_ON_SCREEN" = true ]]; then
-// 				printf "Press [Enter] key to exit process...  "
-// 				promptUser
-// 			fi
-// 			exit 1
-// 		fi
-// 		if [[ "$USER_ON_SCREEN" = true ]]; then
-// 			printf "Press [Enter] key to continue...  "
-// 			promptUser
-// 		fi
-// 	else
-// 		cat $etFile | jq "del(.result.tests, .result.coverage)"
-// 	fi
-// }
-
-// #####################################################################################################################################################################
-// # Script macro-pieces
-// #####################################################################################################################################################################
-
-// function mainPauseToCheck() {
-// 	# --- Pause to valiate org created
-// 	if [[ "$PAUSE2CHECK_ORG" = true ]]; then
-// 		showStatus "*** Opening scratch Org... ($0 ${FUNCNAME[0]})"
-// 		et_sfdx force:org:open
-// 		showPause "Stop to validate the ORG was created succesfully."
-// 	fi
-// }
-// function mainOpenDeployPage() {
-// 	# --- Open deploy page to watch deployments
-// 	if [[ "$SHOW_DEPLOY_PAGE" = true ]]; then
-// 		showStatus "*** Open page to monitor deployment... ($0 ${FUNCNAME[0]})"
-// 		et_sfdx force:org:open --path=$DEPLOY_PAGE
-// 	fi
-// }
-// function mainPrepareOrg() {
-// 	# --- Prepare the org before deployment
-// 	if [ ! -z "$PREPARE_ORG" ]; then
-// 		showStatus "*** Preparing the org... ($0 ${FUNCNAME[0]})"
-// 		for METADATA_API in ${PREPARE_ORG[@]}; do
-// 			sfdx force:mdapi:deploy --deploydir "$METADATA_API" --wait 30
-// 		done
-// 		showComplete
-// 	fi
-// }
-// function mainManualMetadataBefore() {
-// 	# --- Manual metadata (before deployment)
-// 	if [[ ! -z "$PATH2SETUP_METADATA_BEFORE" ]]; then
-// 		showStatus "*** Open page to configure org (BEFORE pushing)... ($0 ${FUNCNAME[0]})"
-// 		et_sfdx force:org:open --path "$PATH2SETUP_METADATA_BEFORE"
-// 		showPause "Configure additonal metadata BEFORE pushing..."
-// 	fi
-// }
-// function mainExecuteApexBeforePush() {
-// 	# --- Execute Apex Anonymous code (Before Push)
-// 	if [ ! -z "$EXEC_ANON_APEX_BEFORE_PUSH" ]; then
-// 		for APEX in ${EXEC_ANON_APEX_BEFORE_PUSH[@]}; do
-// 			showStatus "*** Execute Anonymous Apex (before push): [$APEX]... ($0 ${FUNCNAME[0]})"
-// 			et_sfdxExecuteApex "$APEX" "etLogs/apexBeforePush.json"
-// 			# et_sfdx force:apex:execute -f "$APEX" --json
-// 		done
-// 		showComplete
-// 	fi
-// }
-// function mainInstallPackages() {
-// 	# --- Install Packages (Before Push)
-// 	if [ ! -z "$PACKAGES" ]; then
-// 		showStatus "*** Installing Packages (before push)... ($0 ${FUNCNAME[0]})"
-// 		for PACKAGE in ${PACKAGES[@]}; do
-// 			# if [[ "$SHOW_DEPLOY_PAGE" = true ]]; then
-// 			# 	et_sfdx force:org:open --path=$DEPLOY_PAGE
-// 			# fi
-// 			et_sfdx force:package:install --apexcompile=all --package "$PACKAGE" --wait=30 --noprompt
-// 		done
-// 		showComplete
-// 	fi
-// }
-// function mainDeploy() {
-// 	if [[ "$PERFORM_DEPLOY" = true ]]; then
-// 		showStatus "*** Deploying metadata... ($0 ${FUNCNAME[0]})"
-// 		jq '.packageDirectories[].path' sfdx-project.json > etLogs/tmpDeploy.txt
-// 		while read -r path <&9; do
-// 			folder=$(echo $path | tr -d '"')
-// 			et_sfdxDeploy force:source:deploy --sourcepath "./$folder" --json --loglevel fatal
-// 		done 9<  etLogs/tmpDeploy.txt
-// 		rm etLogs/tmpDeploy.txt
-// 	fi
-// }
-// function mainPushMetadata() {
-// 	showStatus "*** Pushing metadata... ($0 ${FUNCNAME[0]})"
-// 	et_sfdxPush force:source:push --forceoverwrite --json
-// }
-// function mainManualMetadataAfter() {
-// 	# --- Manual metadata (after deployment)
-// 	if [[ ! -z "$PATH2SETUP_METADATA_AFTER" ]]; then
-// 		showStatus "*** Open page to configure org (AFTER pushing)... ($0 ${FUNCNAME[0]})"
-// 		et_sfdx force:org:open --path "$PATH2SETUP_METADATA_AFTER"
-// 		showPause "Configure additonal metadata AFTER pushing..."
-// 	fi
-// }
-// function mainExecuteApexAfterPush() {
-// 	# --- Execute Apex Anonymous code (After Push)
-// 	if [ ! -z "$EXEC_ANON_APEX_AFTER_PUSH" ]; then
-// 		for APEX in ${EXEC_ANON_APEX_AFTER_PUSH[@]}; do
-// 			showStatus "*** Execute Anonymous Apex (after push): [$APEX]... ($0 ${FUNCNAME[0]})"
-// 			et_sfdxExecuteApex "$APEX" "etLogs/apexAfterPush.json"
-// 			# et_sfdx force:apex:execute -f "$APEX"
-// 		done
-// 		showComplete
-// 	fi
-// }
-// function mainAssignPermissionSet() {
-// 	# --- Assign permission set
-// 	if [ ! -z "$PERM_SETS" ]
-// 	then
-// 		showStatus "*** Assigning permission set(s) to your user... ($0 ${FUNCNAME[0]})"
-// 		for PERM_SET in ${PERM_SETS[@]}; do
-// 			et_sfdx force:user:permset:assign --permsetname "$PERM_SET" --json
-// 		done
-// 		showComplete
-// 	fi
-// }
-// function mainDeployAdminProfile() {
-// 	# --- Deploy profile
-// 	if [ -a "$ADMIN_PROFILE" ]; then
-// 		showStatus "*** Deploying 'Admin' standard profile... ($0 ${FUNCNAME[0]})"
-// 		mv .forceignore etLogs/.forceignore
-// 		et_sfdx force:source:deploy -p "$ADMIN_PROFILE"
-// 		local resultcode=$?
-// 		mv etLogs/.forceignore .forceignore
-// 		showComplete
-// 	fi
-// }
-// function mainLoadData() {
-// 	# --- Load data using ETCopyData plugin
-// 	if [[ "$IMPORT_DATA" = true ]]; then
-// 		showStatus "*** Creating data using ETCopyData plugin... ($0 ${FUNCNAME[0]})"
-// 		# sfdx ETCopyData:delete --orgdestination=sbTVB4S_CICD -c "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-// 		# sfdx ETCopyData:export -c "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-// 		# sfdx ETCopyData:import -c "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-// 		et_sfdx ETCopyData:import -c "$ETCOPYDATA_FOLDER" --loglevel info --json --orgsource="$ALIAS" --orgdestination="$ALIAS"
-// 		showComplete
-// 	fi
-// }
-// function mainExecuteApexAfterData() {
-// 	# --- Execute Apex Anonymous code after data
-// 	if [ ! -z "$EXEC_ANON_APEX_AFTER_DATA" ]; then
-// 		for APEX in ${EXEC_ANON_APEX_AFTER_DATA[@]}; do
-// 			showStatus "*** Execute Anonymous Apex (after data): [$APEX]... ($0 ${FUNCNAME[0]})"
-// 			et_sfdxExecuteApex "$APEX" "etLogs/apexAfterData.json"
-// 			# et_sfdx force:apex:execute -f "$APEX"
-// 		done
-// 		showComplete
-// 	fi
-// }
-// function mainRunApexTests() {
-// 	# --- Runing Apex tests
-// 	if [[ "$RUN_APEX_TESTS" = true ]]; then
-// 		showStatus "Runing Apex tests... ($0 ${FUNCNAME[0]})"
-// 		APEX_TEST_LOG_FILENAME="apexTest_ScratchOrg.json"
-// 		jq_sfdxRunApexTests force:apex:test:run --codecoverage --verbose --json --resultformat=json --wait=60
-// 		showComplete
-// 	fi
-// }
-// function mainPushAgain() {
-// 	# --- Push metadata
-// 	showStatus "*** Pushing metadata to scratch Org one more time... ($0 ${FUNCNAME[0]})"
-// 	# if [[ "$SHOW_DEPLOY_PAGE" = true ]]; then
-// 	# 	et_sfdx force:org:open --path=$DEPLOY_PAGE
-// 	# fi
-// 	et_sfdxPush force:source:push -u "$ALIAS" -f --json
-// 	showComplete
-// }
-// function mainReassignAlias() {
-// 	# --- Push metadata
-// 	showStatus "*** Re-assign alias... ($0 ${FUNCNAME[0]})"
-// 	et_sfdx force:config:set defaultusername=$ALIAS
-// 	showComplete
-// }
-// function mainPublishCommunity() {
-// 	# --- Publish community
-// 	if [[ ! -z "$PUBLISH_COMMUNITY_NAME" ]]; then
-// 		showStatus "*** Publishing community... ($0 ${FUNCNAME[0]})"
-// 		showCommand "sfdx force:community:publish --name \"$PUBLISH_COMMUNITY_NAME\""
-// 		sfdx force:community:publish --name "$PUBLISH_COMMUNITY_NAME" || ReportError
-// 	fi
-// }
-// function mainGeneratePassword() {
-// 	# --- Generate Password
-// 	if [[ "$GENERATE_PASSWORD" = true ]]; then
-// 		showStatus "*** Generate Password... ($0 ${FUNCNAME[0]})"
-// 		jq_sfdxGeneratePassword
-// 		showComplete
-// 	fi
-// }
-// function mainDeployToSandbox() {
-// 	# --- Deploy to sandbox
-// 	if [[ ! -z "$DEPLOY_TO_SANDBOX" ]]; then
-// 		showStatus "*** Opening page in sandbox... ($0 ${FUNCNAME[0]})"
-// 		et_sfdx force:org:open --targetusername="$DEPLOY_TO_SANDBOX" --path=$DEPLOY_PAGE
-// 		showStatus "*** Deploying to sandbox... ($0 ${FUNCNAME[0]})"
-// 		et_sfdxDeploy force:source:deploy --sourcepath="$DEPLOY_TO_SANDBOX_FOLDER" --json --loglevel=trace --targetusername="$DEPLOY_TO_SANDBOX"
-// 		APEX_TEST_LOG_FILENAME="apexTest_CICD.json"
-// 		jq_sfdxRunApexTests force:apex:test:run --codecoverage --verbose --json --resultformat=json --wait=60 --targetusername="$DEPLOY_TO_SANDBOX"
-// 	fi
-// }
-// function QuitSuccess() {
-// 	# Green
-// 	printf "\033[0;32m\n"
-// 	printf "*** *** *** *** *** *** ***\n"
-// 	printf "*** *** Org created *** ***\n"
-// 	printf "*** *** *** *** *** *** ***\n"
-// 	printf "\033[0m\n"
-// 	exit 0
-// }
-
-// function promptUser() { // pause
-// 	printf "\033[0m"
-// 	read -e answer
-// 	printf "\n"
-// }
-// function showStatus() {
-// 	# Magenta
-// 	printf "\033[0;35m$1\033[0m\n"
-// }
-// function showCommand() {
-// 	printf "\033[0;33m$*\033[0m\n"
-// }
-// function showComplete() {
-// 	# Green
-// 	# printf "\033[0;32mTask Completed\033[0m\n"
-// 	printf "\033[0;32m"
-// 	echo "Task Completed"
-// 	date
-// 	printf "\033[0m\n"
-// }
-// function showPause(){
-// 	# This will fail on an automated process, but not sure how to fix it.
-// 	# Should I ask? Should I skip? Should I error?
-// 	if [[ "$USER_ON_SCREEN" = true ]]; then
-// 		printf "\033[0;35m\n"
-// 		printf "%s " $*
-// 		printf "\n"
-// 		printf "Press [Enter] key to continue...  "
-// 		promptUser
-// 	else
-// 		printf "\033[0;31m"
-// 		printf "Automated tests! Should not be prompting for this"
-// 		printf "\033[0m\n"
-// 		ReportError
-// 	fi
-// }

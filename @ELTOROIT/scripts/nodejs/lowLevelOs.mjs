@@ -34,6 +34,14 @@ export default class LowLevelOS {
 		return stat.size > 0;
 	}
 
+	static async moveFile({ config, oldPath, newPath }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		ET_Asserts.hasData({ value: oldPath, message: 'oldPath' });
+		ET_Asserts.hasData({ value: newPath, message: 'newPath' });
+
+		await fs.rename(oldPath, newPath);
+	}
+
 	static async readFile({ config, path, isCreate = false }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: path, message: 'path' });

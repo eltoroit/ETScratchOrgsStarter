@@ -10,30 +10,28 @@ const config = {
 	debug: false,
 	deployPage: '/lightning/setup/DeployStatus/home',
 	steps: [
-		'RunJest',
-		'BackupAlias',
+		'BeforeOrg_ValidateETCopyData',
+		'BeforeOrg_RunJestTests',
+		'BeforeOrg_BackupAlias',
 		'CreateScratchOrg',
-		'PauseToCheck',
-		'OpenDeployPage',
-		'PrepareOrg',
-		'ManualMetadataBefore',
-		'ExecuteApexBeforePush',
-		'InstallPackages',
-		// Deploy (Do not do a deploy, rather do a push)
+		'BeforePush_PauseToCheckOrg',
+		'BeforePush_ShowDeployPage',
+		'BeforePush_PrepareOrg',
+		'BeforePush_ManualMetadata',
+		'BeforePush_ExecAnonApex',
+		'BeforePush_InstallPackages',
 		'PushMetadata',
-		'ManualMetadataAfter',
-		'ExecuteApexAfterPush',
-		'AssignPermissionSet',
-		'DeployAdminProfile',
-		'LoadData',
-		'ExecuteApexAfterData',
-		'RunApexTests',
-		// PushAgain
-		// ReassignAlias
-		'PublishCommunity',
-		'GeneratePassword',
+		'AfterPush_ManualMetadata',
+		'AfterPush_ExecuteApex',
+		'AfterPush_AssignPermissionSets',
+		'AfterPush_DeployAdminProfile',
+		'ETCopyData',
+		'AfterData_ExecuteApex',
+		'AfterData_RunApexTests',
+		'AfterData_PublishCommunityName',
+		'AfterData_GeneratePassword',
 		'DeployToSandbox',
-		'QuitSuccess',
+		'ShowFinalSuccess',
 	],
 };
 
@@ -48,7 +46,6 @@ export default class OrgBuilder {
 		config.root = await OS2.getFullPath({ config, relativePath: '.' });
 		await this._readConfigFile();
 		await this._restartLogFolder();
-		await this.sfdx.validateETCopyData({ config });
 		await this.sfdx.processSteps({ config });
 	}
 

@@ -12,18 +12,21 @@
 	"BeforePush_ShowDeployPage": true,
 	"BeforePush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed first
 	"BeforePush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
-	"BeforePush_ExecAnonApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"],
-	"BeforePush_InstallPackages": ["04t41000001HSJC", "04tB0000000P1yA"], // Install required packages before pushing. Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]
+	"BeforePush_ExecAnonApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
+	"BeforePush_InstallPackages": ["04t41000001HSJC"], // Install required packages before pushing. Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]
 	"PushMetadata": true,
 	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
 	"AfterPush_ExecuteApex": ["@ELTOROIT/scripts/apex/SetUserRecord.apex"],
 	"AfterPush_AssignPermissionSets": ["psTest"],
 	"AfterPush_DeployAdminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml",
 	"ETCopyData": "./@ELTOROIT/data",
-	"AfterData_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"],
+	"AfterData_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
 	"AfterData_RunApexTests": true,
-	"AfterData_PublishCommunityName": "ABC",
+	// "AfterData_PublishCommunityName": "ABC",
 	"AfterData_GeneratePassword": true,
 	"DeployToSandbox": { "alias": "DEX450", "folder": "./force-apps/deploy", "runTests": true },
 	"ShowFinalSuccess": true
 }
+
+// Apex: ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"],
+// Packages: ["04t41000001HSJC", "04tB0000000P1yA"], // Install required packages before pushing. Sample: ["04tB0000000P1yA", "04tB0000000P1yB", "04tB0000000P1yC"]

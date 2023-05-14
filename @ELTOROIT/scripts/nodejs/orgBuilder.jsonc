@@ -3,6 +3,7 @@
 	"days": 1,
 	"QuitOnErrors": false,
 	"UserOnScreen": false, // Can I prompt the user to continue? On CICD, this should be false
+	// Steps...
 	"BeforeOrg_ValidateETCopyData": true,
 	"BeforeOrg_RunJestTests": true,
 	"BeforeOrg_BackupAlias": true, // Backup alias, in case you need to go back to the old org :-)

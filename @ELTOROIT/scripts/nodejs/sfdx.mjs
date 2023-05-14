@@ -71,7 +71,7 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '03a. Backup current org alias (Find orgs)';
-		command = 'sfdx alias:list --json';
+		command = 'sfdx alias list --json';
 		logFile = '03a_BeforeOrg_BackupAlias.json';
 		let result = await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
 		// Process results
@@ -79,8 +79,8 @@ export default class SFDX {
 			let orgs = JSON.parse(result.STDOUT).result;
 			let org = orgs.find((org) => org.alias === config.SFDX.alias);
 			config.currentStep = '03b. Backup current org alias (Create backup alias)';
-			command = `sfdx alias:set ${config.SFDX.alias}.bak=${org.value}`;
-			logFile = '03b_BeforeOrg_BackupAlias.txt';
+			command = `sfdx alias set ${config.SFDX.alias}.bak="${org.value}" --json`;
+			logFile = '03b_BeforeOrg_BackupAlias.json';
 			await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
 		}
 	}
@@ -91,14 +91,14 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '04a. Create scratch org (Create new org)';
-		command = `sfdx force:org:create -f config/project-scratch-def.json --setdefaultusername --setalias "${config.SFDX.alias}" -d "${config.SFDX.days}"`;
-		logFile = '04a_CreateScratchOrg.txt';
+		command = `sfdx force org create --definitionfile="config/project-scratch-def.json" --setdefaultusername --setalias="${config.SFDX.alias}" --durationdays="${config.SFDX.days}" --json`;
+		logFile = '04a_CreateScratchOrg.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.CreateScratchOrg, config, command, logFile });
 
 		if (config.SFDX.CreateScratchOrg) {
 			config.currentStep = '04b. Create scratch org (Set as default)';
-			command = `sfdx config:set target-org="${config.SFDX.alias}"`;
-			logFile = '04b_CreateScratchOrg.txt';
+			command = `sfdx config set target-org="${config.SFDX.alias}" --json`;
+			logFile = '04b_CreateScratchOrg.json';
 			await this._runSFDX({ isGoingToRun: config.SFDX.CreateScratchOrg, config, command, logFile });
 		}
 	}
@@ -109,8 +109,8 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '05. Pause to check org';
-		command = 'sfdx org:open';
-		logFile = '05_BeforePush_PauseToCheckOrg.txt';
+		command = 'sfdx org open --json';
+		logFile = '05_BeforePush_PauseToCheckOrg.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_PauseToCheckOrg, config, command, logFile });
 		if (config.SFDX.UserOnScreen) {
 			if (config.SFDX.BeforePush_PauseToCheckOrg) {
@@ -130,8 +130,8 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '06. Open deploy page to watch deployments';
-		command = `sfdx force:org:open --path="${config.deployPage}"`;
-		logFile = '06_BeforePush_ShowDeployPage.txt';
+		command = `sfdx org open --path="${config.deployPage}" --json`;
+		logFile = '06_BeforePush_ShowDeployPage.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_ShowDeployPage, config, command, logFile });
 	}
 
@@ -142,8 +142,8 @@ export default class SFDX {
 
 		config.currentStep = '07. Prepare the org before push';
 		commandParts = {
-			pre: 'sfdx force:mdapi:deploy --deploydir "',
-			post: '" --json --wait 30',
+			pre: 'sfdx force mdapi deploy --deploydir="',
+			post: '" --json --wait=30',
 		};
 		logFileParts = {
 			step: '07',
@@ -162,7 +162,7 @@ export default class SFDX {
 
 		config.currentStep = '08. Open pages to manually configure org before push';
 		commandParts = {
-			pre: 'sfdx force:org:open --path "',
+			pre: 'sfdx org open --path="',
 			post: '" --json',
 		};
 		logFileParts = {
@@ -192,7 +192,7 @@ export default class SFDX {
 
 		config.currentStep = '09. Execute Apex Anonymous code before push';
 		commandParts = {
-			pre: 'sfdx apex:run -f "',
+			pre: 'sfdx apex run -f "',
 			post: '" --json',
 		};
 		logFileParts = {
@@ -212,8 +212,8 @@ export default class SFDX {
 
 		config.currentStep = '10. Install Package(s) before push';
 		commandParts = {
-			pre: 'sfdx package:install --apex-compile=all --package "',
-			post: '" --wait=30 --no-prompt',
+			pre: 'sfdx package install --apex-compile=all --package "',
+			post: '" --wait=30 --no-prompt --json',
 		};
 		logFileParts = {
 			step: '10',
@@ -231,8 +231,8 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '11. Push metadata';
-		command = 'sfdx force:source:push --forceoverwrite --json';
-		logFile = '11_PushMetadata.txt';
+		command = 'sfdx force source push --forceoverwrite --json';
+		logFile = '11_PushMetadata.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.PushMetadata, config, command, logFile });
 	}
 
@@ -243,7 +243,7 @@ export default class SFDX {
 
 		config.currentStep = '12. Open pages to manually configure org after push';
 		commandParts = {
-			pre: 'sfdx force:org:open --path "',
+			pre: 'sfdx org open --path="',
 			post: '" --json',
 		};
 		logFileParts = {
@@ -273,7 +273,7 @@ export default class SFDX {
 
 		config.currentStep = '13. Execute Apex Anonymous code after push';
 		commandParts = {
-			pre: 'sfdx apex:run -f "',
+			pre: 'sfdx apex run --file="',
 			post: '" --json',
 		};
 		logFileParts = {
@@ -293,7 +293,7 @@ export default class SFDX {
 
 		config.currentStep = '14. Assign permission sets to your user';
 		commandParts = {
-			pre: 'sfdx force:user:permset:assign --permsetname "',
+			pre: 'sfdx force user permset assign --perm-set-name="',
 			post: '" --json',
 		};
 		logFileParts = {
@@ -312,8 +312,8 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '15. Deploy "Admin" standard profile';
-		command = `sfdx force:source:deploy -p "${config.SFDX.AfterPush_DeployAdminProfile}"`;
-		logFile = '15_AfterPush_DeployAdminProfile.txt';
+		command = `sfdx force source deploy --sourcepath="${config.SFDX.AfterPush_DeployAdminProfile}" --json`;
+		logFile = '15_AfterPush_DeployAdminProfile.json';
 
 		// Move .forceignore (hide it)
 		let errors = [];
@@ -350,11 +350,11 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '16. Load data using ETCopyData plugin';
-		// sfdx ETCopyData:delete --orgdestination=sbTVB4S_CICD --configfolder "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-		// sfdx ETCopyData:export --configfolder "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-		// sfdx ETCopyData:import --configfolder "./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-		command = `sfdx ETCopyData:import --configfolder "${config.SFDX.ETCopyData}" --loglevel info --json --orgsource="${config.SFDX.alias}" --orgdestination="${config.SFDX.alias}"`;
-		logFile = '16_ETCopyData.txt';
+		// sfdx ETCopyData delete --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// sfdx ETCopyData export --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// sfdx ETCopyData import --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		command = `sfdx ETCopyData import --configfolder "${config.SFDX.ETCopyData}" --loglevel="info" --json --orgsource="${config.SFDX.alias}" --orgdestination="${config.SFDX.alias}"`;
+		logFile = '16_ETCopyData.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.ETCopyData, config, command, logFile });
 	}
 
@@ -365,7 +365,7 @@ export default class SFDX {
 
 		config.currentStep = '17. Execute Apex Anonymous code after data load';
 		commandParts = {
-			pre: 'sfdx apex:run -f "',
+			pre: 'sfdx apex run --file="',
 			post: '" --json',
 		};
 		logFileParts = {
@@ -384,7 +384,7 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '18. Run Apex tests';
-		command = 'sfdx apex:run:test --code-coverage --json --result-format=json --wait=60';
+		command = 'sfdx apex run test --code-coverage --json --result-format=json --wait=60';
 		logFile = '18_AfterData_RunApexTests.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_RunApexTests, config, command, logFile });
 	}
@@ -395,7 +395,7 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '19. Publish community';
-		command = `sfdx community:publish --name "${config.SFDX.AfterData_PublishCommunityName}"`;
+		command = `sfdx community publish --name "${config.SFDX.AfterData_PublishCommunityName}" --json`;
 		logFile = '19_AfterData_PublishCommunityName.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_PublishCommunityName, config, command, logFile });
 	}
@@ -406,13 +406,13 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '20a. Generate Password (Create)';
-		command = 'sfdx force:user:password:generate --json';
+		command = 'sfdx force user password generate --json';
 		logFile = '20a_AfterData_GeneratePassword.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
 
 		if (config.SFDX.AfterData_GeneratePassword) {
 			config.currentStep = '20b. Generate Password (Display)';
-			command = 'sfdx org:display:user --json';
+			command = 'sfdx org display user --json';
 			logFile = '20b_AfterData_GeneratePassword.json';
 			const result = await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
 			if (config.SFDX.AfterData_GeneratePassword && result.CLOSE.code === 0) {
@@ -428,17 +428,17 @@ export default class SFDX {
 
 		config.currentStep = '21a. Deploy to sandbox (Open Deploy page)';
 		if (config.SFDX.DeployToSandbox) {
-			command = `sfdx org open --target-org="${config.SFDX.DeployToSandbox.alias}" --path=${config.deployPage}`;
+			command = `sfdx org open --target-org="${config.SFDX.DeployToSandbox.alias}" --path=${config.deployPage} --json`;
 			logFile = '21a_DeployToSandbox.json';
 			await this._runSFDX({ isGoingToRun: config.SFDX.DeployToSandbox, config, command, logFile });
 
 			config.currentStep = '21b. Deploy to sandbox (Perform Deployment)';
-			command = `sfdx force:source:deploy --sourcepath="${config.SFDX.DeployToSandbox.folder}" --json --loglevel=trace --targetusername="${config.SFDX.DeployToSandbox.alias}"`;
+			command = `sfdx force source deploy --sourcepath="${config.SFDX.DeployToSandbox.folder}" --json --loglevel=trace --targetusername="${config.SFDX.DeployToSandbox.alias}" --json`;
 			logFile = '21b_DeployToSandbox.json';
 			await this._runSFDX({ isGoingToRun: config.SFDX.DeployToSandbox, config, command, logFile });
 
 			config.currentStep = '21c. Deploy to sandbox (Run tests)';
-			command = `sfdx apex:run:test --code-coverage --json --result-format=json --wait=60 --targetusername="${config.SFDX.DeployToSandbox.alias}"`;
+			command = `sfdx apex run test --code-coverage --json --result-format=json --wait=60 --target-org="${config.SFDX.DeployToSandbox.alias}" --json`;
 			logFile = '21c_DeployToSandbox.json';
 			await this._runSFDX({ isGoingToRun: config.SFDX.DeployToSandbox, config, command, logFile });
 		} else {
@@ -450,13 +450,40 @@ export default class SFDX {
 	async ShowFinalSuccess({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
-		await OS2.writeFile({ config, path: `${config.rootLogs}/_commands`, data: Colors2.getPrettyJson({ obj: config.commands }) });
-		await OS2.writeFile({ config, path: `${config.rootLogs}/_errors`, data: Colors2.getPrettyJson({ obj: config.errors }) });
+		const processCommands = async () => {
+			let data = '';
+			config.commands.forEach((command) => {
+				data += `${command}\n`;
+			});
+			await OS2.writeFile({ config, path: `${config.rootLogs}/_commands.txt`, data });
+		};
+
+		const processErrors = async () => {
+			let data = '';
+			config.errors.forEach((error) => {
+				data += `${error}\n`;
+			});
+			await OS2.writeFile({ config, path: `${config.rootLogs}/_errors.txt`, data });
+		};
+
+		await processCommands();
+		await processErrors();
 		if (config.SFDX.ShowFinalSuccess) {
-			Colors2.success({ msg: '' });
-			Colors2.success({ msg: '*** *** *** *** *** *** *** *** ***' });
-			Colors2.success({ msg: '*** ***  Process completed  *** ***' });
-			Colors2.success({ msg: '*** *** *** *** *** *** *** *** ***' });
+			if (config.errors.length > 0) {
+				Colors2.error({ msg: '' });
+				Colors2.error({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.error({ msg: '*** ***  Completed with errors  *** ***' });
+				Colors2.error({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.error({ msg: '' });
+				config.errors.forEach((error) => {
+					Colors2.error({ msg: error });
+				});
+			} else {
+				Colors2.success({ msg: '' });
+				Colors2.success({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.success({ msg: '*** ***  Completed succesfully  *** ***' });
+				Colors2.success({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+			}
 		}
 	}
 
@@ -578,6 +605,7 @@ export default class SFDX {
 			return result;
 		} catch (ex) {
 			await logResults();
+			config.errors.push(config.currentStep);
 			let msg = `${config.currentStep} failed`;
 			Logs2.reportErrorMessage({ config, msg: `${new Date()} | ${config.currentStep} | Failed to execute` });
 			if (config.debug) {

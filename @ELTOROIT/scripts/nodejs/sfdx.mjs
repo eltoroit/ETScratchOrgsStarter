@@ -63,7 +63,7 @@ export default class SFDX {
 		let logFile, command;
 
 		config.currentStep = '02. Run JEST tests';
-		command = 'npm run test:unit:CICD';
+		command = 'node node_modules/@salesforce/sfdx-lwc-jest/bin/sfdx-lwc-jest';
 		logFile = '02_BeforeOrg_RunJestTests.txt';
 		await this._runAndLog({ isGoingToRun: config.SFDX.BeforeOrg_RunJestTests, config, command, logFile });
 	}
@@ -81,10 +81,12 @@ export default class SFDX {
 		if (config.SFDX.BeforeOrg_BackupAlias) {
 			let orgs = JSON.parse(result.STDOUT).result;
 			let org = orgs.find((org) => org.alias === config.SFDX.alias);
-			config.currentStep = '03b. Backup current org alias (Create backup alias)';
-			command = `sf alias set ${config.SFDX.alias}.bak="${org.value}" --json`;
-			logFile = '03b_BeforeOrg_BackupAlias.json';
-			await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
+			if (org) {
+				config.currentStep = '03b. Backup current org alias (Create backup alias)';
+				command = `sf alias set ${config.SFDX.alias}.bak="${org.value}" --json`;
+				logFile = '03b_BeforeOrg_BackupAlias.json';
+				await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
+			}
 		}
 	}
 
@@ -189,7 +191,7 @@ export default class SFDX {
 	}
 
 	// 09. Execute Apex Anonymous code before push
-	async BeforePush_ExecAnonApex({ config }) {
+	async BeforePush_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
@@ -200,10 +202,10 @@ export default class SFDX {
 		};
 		logFileParts = {
 			step: '09',
-			pre: 'BeforePush_ExecAnonApex',
+			pre: 'BeforePush_ExecuteApex',
 			post: '.json',
 		};
-		listValues = config.SFDX.BeforePush_ExecAnonApex;
+		listValues = config.SFDX.BeforePush_ExecuteApex;
 		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}

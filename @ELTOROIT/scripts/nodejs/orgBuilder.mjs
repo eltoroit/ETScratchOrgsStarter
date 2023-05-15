@@ -18,7 +18,7 @@ const config = {
 		'BeforePush_ShowDeployPage',
 		'BeforePush_PrepareOrg',
 		'BeforePush_ManualMetadata',
-		'BeforePush_ExecAnonApex',
+		'BeforePush_ExecuteApex',
 		'BeforePush_InstallPackages',
 		'PushMetadata',
 		'AfterPush_ManualMetadata',

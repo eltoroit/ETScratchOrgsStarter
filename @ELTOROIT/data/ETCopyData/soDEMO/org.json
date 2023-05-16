@@ -1910,68 +1910,6 @@
 			"Campaign.CampaignMemberRecordTypeId": [
 				"Parent sObject [RecordType] is not processed"
 			],
-			"Case.IsDeleted": [
-				"Must be createable"
-			],
-			"Case.MasterRecordId": [
-				"Must be createable",
-				"Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField"
-			],
-			"Case.CaseNumber": [
-				"Can't be autoNumber",
-				"Must be createable"
-			],
-			"Case.AssetId": [
-				"Parent sObject [Asset] is not processed"
-			],
-			"Case.ParentId": [
-				"Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField"
-			],
-			"Case.IsClosed": [
-				"Must be createable"
-			],
-			"Case.ClosedDate": [
-				"Must be createable"
-			],
-			"Case.OwnerId": [
-				"User asked for this field to be excluded",
-				"Reference, but it points to 0 or more than 1 sObject: | Group | User | "
-			],
-			"Case.CreatedDate": [
-				"Must be createable"
-			],
-			"Case.CreatedById": [
-				"Must be createable",
-				"Parent sObject [User] is not processed"
-			],
-			"Case.LastModifiedDate": [
-				"Must be createable"
-			],
-			"Case.LastModifiedById": [
-				"Must be createable",
-				"Parent sObject [User] is not processed"
-			],
-			"Case.SystemModstamp": [
-				"Must be createable"
-			],
-			"Case.ContactPhone": [
-				"Must be createable"
-			],
-			"Case.ContactMobile": [
-				"Must be createable"
-			],
-			"Case.ContactEmail": [
-				"Must be createable"
-			],
-			"Case.ContactFax": [
-				"Must be createable"
-			],
-			"Case.LastViewedDate": [
-				"Must be createable"
-			],
-			"Case.LastReferencedDate": [
-				"Must be createable"
-			],
 			"Opportunity.IsDeleted": [
 				"Must be createable"
 			],
@@ -2051,6 +1989,68 @@
 			"Opportunity.LastCloseDateChangedHistoryId": [
 				"Must be createable",
 				"Parent sObject [OpportunityHistory] is not processed"
+			],
+			"Case.IsDeleted": [
+				"Must be createable"
+			],
+			"Case.MasterRecordId": [
+				"Must be createable",
+				"Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField"
+			],
+			"Case.CaseNumber": [
+				"Can't be autoNumber",
+				"Must be createable"
+			],
+			"Case.AssetId": [
+				"Parent sObject [Asset] is not processed"
+			],
+			"Case.ParentId": [
+				"Recursive parenting for field references is supported, but requires the field to be configured as twoPassReferenceField"
+			],
+			"Case.IsClosed": [
+				"Must be createable"
+			],
+			"Case.ClosedDate": [
+				"Must be createable"
+			],
+			"Case.OwnerId": [
+				"User asked for this field to be excluded",
+				"Reference, but it points to 0 or more than 1 sObject: | Group | User | "
+			],
+			"Case.CreatedDate": [
+				"Must be createable"
+			],
+			"Case.CreatedById": [
+				"Must be createable",
+				"Parent sObject [User] is not processed"
+			],
+			"Case.LastModifiedDate": [
+				"Must be createable"
+			],
+			"Case.LastModifiedById": [
+				"Must be createable",
+				"Parent sObject [User] is not processed"
+			],
+			"Case.SystemModstamp": [
+				"Must be createable"
+			],
+			"Case.ContactPhone": [
+				"Must be createable"
+			],
+			"Case.ContactMobile": [
+				"Must be createable"
+			],
+			"Case.ContactEmail": [
+				"Must be createable"
+			],
+			"Case.ContactFax": [
+				"Must be createable"
+			],
+			"Case.LastViewedDate": [
+				"Must be createable"
+			],
+			"Case.LastReferencedDate": [
+				"Must be createable"
 			],
 			"Lead.IsDeleted": [
 				"Must be createable"
@@ -2495,6 +2495,159 @@
 			"Campaign.TopicAssignments => TopicAssignment": [
 				"Child sObject [TopicAssignment] is not processed"
 			],
+			"Opportunity.null => AIInsightValue": [
+				"Child sObject [AIInsightValue] is not processed"
+			],
+			"Opportunity.null => AIRecordInsight": [
+				"Child sObject [AIRecordInsight] is not processed"
+			],
+			"Opportunity.AccountPartners => AccountPartner": [
+				"Child sObject [AccountPartner] is not processed"
+			],
+			"Opportunity.ActivityHistories => ActivityHistory": [
+				"Child sObject [ActivityHistory] is not processed"
+			],
+			"Opportunity.AttachedContentDocuments => AttachedContentDocument": [
+				"Child sObject [AttachedContentDocument] is not processed"
+			],
+			"Opportunity.Attachments => Attachment": [
+				"Child sObject [Attachment] is not processed"
+			],
+			"Opportunity.RecordAssociatedGroups => CollaborationGroupRecord": [
+				"Child sObject [CollaborationGroupRecord] is not processed"
+			],
+			"Opportunity.CombinedAttachments => CombinedAttachment": [
+				"Child sObject [CombinedAttachment] is not processed"
+			],
+			"Opportunity.ContactRequests => ContactRequest": [
+				"Child sObject [ContactRequest] is not processed"
+			],
+			"Opportunity.null => ContentDistribution": [
+				"Child sObject [ContentDistribution] is not processed"
+			],
+			"Opportunity.ContentDocumentLinks => ContentDocumentLink": [
+				"Child sObject [ContentDocumentLink] is not processed"
+			],
+			"Opportunity.null => ContentDocumentLinkChangeEvent": [
+				"Child sObject [ContentDocumentLinkChangeEvent] is not processed"
+			],
+			"Opportunity.null => ContentVersion": [
+				"Child sObject [ContentVersion] is not processed"
+			],
+			"Opportunity.null => ContentVersionChangeEvent": [
+				"Child sObject [ContentVersionChangeEvent] is not processed"
+			],
+			"Opportunity.Emails => EmailMessage": [
+				"Child sObject [EmailMessage] is not processed"
+			],
+			"Opportunity.null => EmailMessageChangeEvent": [
+				"Child sObject [EmailMessageChangeEvent] is not processed"
+			],
+			"Opportunity.FeedSubscriptionsForEntity => EntitySubscription": [
+				"Child sObject [EntitySubscription] is not processed"
+			],
+			"Opportunity.Events => Event": [
+				"Child sObject [Event] is not processed"
+			],
+			"Opportunity.null => EventChangeEvent": [
+				"Child sObject [EventChangeEvent] is not processed"
+			],
+			"Opportunity.null => EventRelationChangeEvent": [
+				"Child sObject [EventRelationChangeEvent] is not processed"
+			],
+			"Opportunity.null => FeedComment": [
+				"Child sObject [FeedComment] is not processed"
+			],
+			"Opportunity.null => FeedItem": [
+				"Child sObject [FeedItem] is not processed"
+			],
+			"Opportunity.null => FlowExecutionErrorEvent": [
+				"Child sObject [FlowExecutionErrorEvent] is not processed"
+			],
+			"Opportunity.null => FlowOrchestrationWorkItem": [
+				"Child sObject [FlowOrchestrationWorkItem] is not processed"
+			],
+			"Opportunity.null => FlowRecordRelation": [
+				"Child sObject [FlowRecordRelation] is not processed"
+			],
+			"Opportunity.null => LeadChangeEvent": [
+				"Child sObject [LeadChangeEvent] is not processed"
+			],
+			"Opportunity.Notes => Note": [
+				"Child sObject [Note] is not processed"
+			],
+			"Opportunity.NotesAndAttachments => NoteAndAttachment": [
+				"Child sObject [NoteAndAttachment] is not processed"
+			],
+			"Opportunity.OpenActivities => OpenActivity": [
+				"Child sObject [OpenActivity] is not processed"
+			],
+			"Opportunity.OpportunityCompetitors => OpportunityCompetitor": [
+				"Child sObject [OpportunityCompetitor] is not processed"
+			],
+			"Opportunity.OpportunityContactRoles => OpportunityContactRole": [
+				"Child sObject [OpportunityContactRole] is not processed"
+			],
+			"Opportunity.null => OpportunityContactRoleChangeEvent": [
+				"Child sObject [OpportunityContactRoleChangeEvent] is not processed"
+			],
+			"Opportunity.Feeds => OpportunityFeed": [
+				"Child sObject [OpportunityFeed] is not processed"
+			],
+			"Opportunity.Histories => OpportunityFieldHistory": [
+				"Child sObject [OpportunityFieldHistory] is not processed"
+			],
+			"Opportunity.OpportunityHistories => OpportunityHistory": [
+				"Child sObject [OpportunityHistory] is not processed"
+			],
+			"Opportunity.OpportunityLineItems => OpportunityLineItem": [
+				"Child sObject [OpportunityLineItem] is not processed"
+			],
+			"Opportunity.OpportunityPartnersFrom => OpportunityPartner": [
+				"Child sObject [OpportunityPartner] is not processed"
+			],
+			"Opportunity.Shares => OpportunityShare": [
+				"Child sObject [OpportunityShare] is not processed"
+			],
+			"Opportunity.null => OutgoingEmail": [
+				"Child sObject [OutgoingEmail] is not processed"
+			],
+			"Opportunity.Partners => Partner": [
+				"Child sObject [Partner] is not processed"
+			],
+			"Opportunity.ProcessInstances => ProcessInstance": [
+				"Child sObject [ProcessInstance] is not processed"
+			],
+			"Opportunity.ProcessSteps => ProcessInstanceHistory": [
+				"Child sObject [ProcessInstanceHistory] is not processed"
+			],
+			"Opportunity.RecordActions => RecordAction": [
+				"Child sObject [RecordAction] is not processed"
+			],
+			"Opportunity.RecordActionHistories => RecordActionHistory": [
+				"Child sObject [RecordActionHistory] is not processed"
+			],
+			"Opportunity.ServiceAppointments => ServiceAppointment": [
+				"Child sObject [ServiceAppointment] is not processed"
+			],
+			"Opportunity.null => ServiceAppointmentChangeEvent": [
+				"Child sObject [ServiceAppointmentChangeEvent] is not processed"
+			],
+			"Opportunity.Swarms => Swarm": [
+				"Child sObject [Swarm] is not processed"
+			],
+			"Opportunity.SwarmMembers => SwarmMember": [
+				"Child sObject [SwarmMember] is not processed"
+			],
+			"Opportunity.Tasks => Task": [
+				"Child sObject [Task] is not processed"
+			],
+			"Opportunity.null => TaskChangeEvent": [
+				"Child sObject [TaskChangeEvent] is not processed"
+			],
+			"Opportunity.TopicAssignments => TopicAssignment": [
+				"Child sObject [TopicAssignment] is not processed"
+			],
 			"Case.null => AIInsightValue": [
 				"Child sObject [AIInsightValue] is not processed"
 			],
@@ -2665,159 +2818,6 @@
 			],
 			"Case.null => WorkOrderChangeEvent": [
 				"Child sObject [WorkOrderChangeEvent] is not processed"
-			],
-			"Opportunity.null => AIInsightValue": [
-				"Child sObject [AIInsightValue] is not processed"
-			],
-			"Opportunity.null => AIRecordInsight": [
-				"Child sObject [AIRecordInsight] is not processed"
-			],
-			"Opportunity.AccountPartners => AccountPartner": [
-				"Child sObject [AccountPartner] is not processed"
-			],
-			"Opportunity.ActivityHistories => ActivityHistory": [
-				"Child sObject [ActivityHistory] is not processed"
-			],
-			"Opportunity.AttachedContentDocuments => AttachedContentDocument": [
-				"Child sObject [AttachedContentDocument] is not processed"
-			],
-			"Opportunity.Attachments => Attachment": [
-				"Child sObject [Attachment] is not processed"
-			],
-			"Opportunity.RecordAssociatedGroups => CollaborationGroupRecord": [
-				"Child sObject [CollaborationGroupRecord] is not processed"
-			],
-			"Opportunity.CombinedAttachments => CombinedAttachment": [
-				"Child sObject [CombinedAttachment] is not processed"
-			],
-			"Opportunity.ContactRequests => ContactRequest": [
-				"Child sObject [ContactRequest] is not processed"
-			],
-			"Opportunity.null => ContentDistribution": [
-				"Child sObject [ContentDistribution] is not processed"
-			],
-			"Opportunity.ContentDocumentLinks => ContentDocumentLink": [
-				"Child sObject [ContentDocumentLink] is not processed"
-			],
-			"Opportunity.null => ContentDocumentLinkChangeEvent": [
-				"Child sObject [ContentDocumentLinkChangeEvent] is not processed"
-			],
-			"Opportunity.null => ContentVersion": [
-				"Child sObject [ContentVersion] is not processed"
-			],
-			"Opportunity.null => ContentVersionChangeEvent": [
-				"Child sObject [ContentVersionChangeEvent] is not processed"
-			],
-			"Opportunity.Emails => EmailMessage": [
-				"Child sObject [EmailMessage] is not processed"
-			],
-			"Opportunity.null => EmailMessageChangeEvent": [
-				"Child sObject [EmailMessageChangeEvent] is not processed"
-			],
-			"Opportunity.FeedSubscriptionsForEntity => EntitySubscription": [
-				"Child sObject [EntitySubscription] is not processed"
-			],
-			"Opportunity.Events => Event": [
-				"Child sObject [Event] is not processed"
-			],
-			"Opportunity.null => EventChangeEvent": [
-				"Child sObject [EventChangeEvent] is not processed"
-			],
-			"Opportunity.null => EventRelationChangeEvent": [
-				"Child sObject [EventRelationChangeEvent] is not processed"
-			],
-			"Opportunity.null => FeedComment": [
-				"Child sObject [FeedComment] is not processed"
-			],
-			"Opportunity.null => FeedItem": [
-				"Child sObject [FeedItem] is not processed"
-			],
-			"Opportunity.null => FlowExecutionErrorEvent": [
-				"Child sObject [FlowExecutionErrorEvent] is not processed"
-			],
-			"Opportunity.null => FlowOrchestrationWorkItem": [
-				"Child sObject [FlowOrchestrationWorkItem] is not processed"
-			],
-			"Opportunity.null => FlowRecordRelation": [
-				"Child sObject [FlowRecordRelation] is not processed"
-			],
-			"Opportunity.null => LeadChangeEvent": [
-				"Child sObject [LeadChangeEvent] is not processed"
-			],
-			"Opportunity.Notes => Note": [
-				"Child sObject [Note] is not processed"
-			],
-			"Opportunity.NotesAndAttachments => NoteAndAttachment": [
-				"Child sObject [NoteAndAttachment] is not processed"
-			],
-			"Opportunity.OpenActivities => OpenActivity": [
-				"Child sObject [OpenActivity] is not processed"
-			],
-			"Opportunity.OpportunityCompetitors => OpportunityCompetitor": [
-				"Child sObject [OpportunityCompetitor] is not processed"
-			],
-			"Opportunity.OpportunityContactRoles => OpportunityContactRole": [
-				"Child sObject [OpportunityContactRole] is not processed"
-			],
-			"Opportunity.null => OpportunityContactRoleChangeEvent": [
-				"Child sObject [OpportunityContactRoleChangeEvent] is not processed"
-			],
-			"Opportunity.Feeds => OpportunityFeed": [
-				"Child sObject [OpportunityFeed] is not processed"
-			],
-			"Opportunity.Histories => OpportunityFieldHistory": [
-				"Child sObject [OpportunityFieldHistory] is not processed"
-			],
-			"Opportunity.OpportunityHistories => OpportunityHistory": [
-				"Child sObject [OpportunityHistory] is not processed"
-			],
-			"Opportunity.OpportunityLineItems => OpportunityLineItem": [
-				"Child sObject [OpportunityLineItem] is not processed"
-			],
-			"Opportunity.OpportunityPartnersFrom => OpportunityPartner": [
-				"Child sObject [OpportunityPartner] is not processed"
-			],
-			"Opportunity.Shares => OpportunityShare": [
-				"Child sObject [OpportunityShare] is not processed"
-			],
-			"Opportunity.null => OutgoingEmail": [
-				"Child sObject [OutgoingEmail] is not processed"
-			],
-			"Opportunity.Partners => Partner": [
-				"Child sObject [Partner] is not processed"
-			],
-			"Opportunity.ProcessInstances => ProcessInstance": [
-				"Child sObject [ProcessInstance] is not processed"
-			],
-			"Opportunity.ProcessSteps => ProcessInstanceHistory": [
-				"Child sObject [ProcessInstanceHistory] is not processed"
-			],
-			"Opportunity.RecordActions => RecordAction": [
-				"Child sObject [RecordAction] is not processed"
-			],
-			"Opportunity.RecordActionHistories => RecordActionHistory": [
-				"Child sObject [RecordActionHistory] is not processed"
-			],
-			"Opportunity.ServiceAppointments => ServiceAppointment": [
-				"Child sObject [ServiceAppointment] is not processed"
-			],
-			"Opportunity.null => ServiceAppointmentChangeEvent": [
-				"Child sObject [ServiceAppointmentChangeEvent] is not processed"
-			],
-			"Opportunity.Swarms => Swarm": [
-				"Child sObject [Swarm] is not processed"
-			],
-			"Opportunity.SwarmMembers => SwarmMember": [
-				"Child sObject [SwarmMember] is not processed"
-			],
-			"Opportunity.Tasks => Task": [
-				"Child sObject [Task] is not processed"
-			],
-			"Opportunity.null => TaskChangeEvent": [
-				"Child sObject [TaskChangeEvent] is not processed"
-			],
-			"Opportunity.TopicAssignments => TopicAssignment": [
-				"Child sObject [TopicAssignment] is not processed"
 			],
 			"Lead.null => AIInsightValue": [
 				"Child sObject [AIInsightValue] is not processed"

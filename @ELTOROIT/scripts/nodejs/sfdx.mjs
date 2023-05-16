@@ -38,7 +38,7 @@ export default class SFDX {
 
 		config.currentStep = '01. Validate ETCopyData';
 		command = 'sfdx plugins';
-		logFile = '01_BeforeOrg_ValidateETCopyData.txt';
+		logFile = '01_BeforeOrg_ValidateETCopyData.json';
 		let result = await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_ValidateETCopyData, config, command, logFile });
 		// Process results
 		if (config.SFDX.BeforeOrg_ValidateETCopyData) {
@@ -64,7 +64,7 @@ export default class SFDX {
 
 		config.currentStep = '02. Run JEST tests';
 		command = 'node node_modules/@salesforce/sfdx-lwc-jest/bin/sfdx-lwc-jest';
-		logFile = '02_BeforeOrg_RunJestTests.txt';
+		logFile = '02_BeforeOrg_RunJestTests.json';
 		await this._runAndLog({ isGoingToRun: config.SFDX.BeforeOrg_RunJestTests, config, command, logFile });
 	}
 
@@ -408,20 +408,31 @@ export default class SFDX {
 	// 20. Generate Password
 	async AfterData_GeneratePassword({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
-		let logFile, command;
+		let logFile,
+			command,
+			tmpCommand = {};
 
 		config.currentStep = '20a. Generate Password (Create)';
 		command = 'sf force user password generate --json';
 		logFile = '20a_AfterData_GeneratePassword.json';
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
+		tmpCommand = command;
 
 		if (config.SFDX.AfterData_GeneratePassword) {
 			config.currentStep = '20b. Generate Password (Display)';
 			command = 'sf org display user --json';
 			logFile = '20b_AfterData_GeneratePassword.json';
-			const result = await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
+			let result = await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_GeneratePassword, config, command, logFile });
 			if (config.SFDX.AfterData_GeneratePassword && result.CLOSE.code === 0) {
-				Colors2.sfdxShowMessage({ msg: Colors2.getPrettyJson({ obj: JSON.parse(result.STDOUT).result }) });
+				let stdOut = JSON.parse(result.STDOUT);
+				let user = stdOut.result;
+				let warnings = stdOut.warnings.filter((warning) => warning.includes('sensitive information'))[0];
+				let url = `${user.instanceUrl}/secur/frontdoor.jsp?sid=${user.accessToken}`;
+				let obj = { command: tmpCommand, url, user, warnings };
+				let data = Colors2.getPrettyJson({ obj });
+				let path = `${config.rootLogs}/_user.json`;
+				await OS2.writeFile({ config, path, data });
+				Colors2.sfdxShowMessage({ msg: `User credentials are saved in this file: ${path}` });
 			}
 		}
 	}
@@ -553,13 +564,15 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
 		let result = null;
 		let notification = null;
+		let start = null;
+		let stop = null;
 
-		const logResults = async () => {
+		const logResults = async (hadErrors) => {
 			let data = '';
 			data += `Step: ${notification.currentStep}\n`;
 			data += `Command: ${notification.app} ${notification.args.join(' ')}\n`;
 			data += '\n=== === === RESULT === === ===\n';
-			data += `${Colors2.getPrettyJson({ obj: notification.response.CLOSE })}\n`;
+			data += `${Colors2.getPrettyJson({ obj: { ...notification.response.CLOSE, start, _stop: stop, hadErrors } })}\n`;
 			// data += `${notification.cwd}\n`;
 			if (notification.response.STDOUT) {
 				data += '\n=== === === STDOUT === === ===\n';
@@ -582,10 +595,11 @@ export default class SFDX {
 		}
 
 		try {
+			start = new Date();
 			Colors2.sfdxShowStatus({ status: '' });
 			Colors2.sfdxShowStatus({ status: config.currentStep });
 			Colors2.sfdxShowCommand({ command });
-			Colors2.sfdxShowMessage({ msg: `${new Date()} | ${config.currentStep} | Started` });
+			Colors2.sfdxShowMessage({ msg: `${start} | ${config.currentStep} | Started` });
 
 			config.commands.push(command);
 			command = command.split(' ');
@@ -605,14 +619,16 @@ export default class SFDX {
 			if (result.CLOSE.code !== 0) {
 				throw result;
 			}
-			await logResults();
-			Colors2.sfdxShowSuccess({ msg: `${new Date()} | ${config.currentStep} | Succesfully completed` });
+			stop = new Date();
+			await logResults(false);
+			Colors2.sfdxShowSuccess({ msg: `${stop} | ${config.currentStep} | Succesfully completed` });
 			return result;
 		} catch (ex) {
-			await logResults();
+			stop = new Date();
+			await logResults(true);
 			config.errors.push(config.currentStep);
 			let msg = `${config.currentStep} failed`;
-			Logs2.reportErrorMessage({ config, msg: `${new Date()} | ${config.currentStep} | Failed to execute` });
+			Logs2.reportErrorMessage({ config, msg: `${stop} | ${config.currentStep} | Failed to execute` });
 			if (config.debug) {
 				if (ex.STDOUT && ex.STDERR) {
 					if (ex.STDOUT) {

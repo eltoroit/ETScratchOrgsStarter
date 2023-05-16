@@ -58,7 +58,6 @@
 	},
 	"dependencies": {
 		"fs-extra": "11.1.1",
-		"jsonc-parser": "3.2.0",
-		"node-fetch": "3.3.1"
+		"jsonc-parser": "3.2.0"
 	}
 }

@@ -5,14 +5,14 @@ import * as readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 
 export default class Logs {
-	static reportError({ config, obj }) {
-		ET_Asserts.hasData({ value: config, message: 'config' });
-		ET_Asserts.hasData({ value: obj, message: 'obj' });
+	// static reportError({ config, obj }) {
+	// 	ET_Asserts.hasData({ value: config, message: 'config' });
+	// 	ET_Asserts.hasData({ value: obj, message: 'obj' });
 
-		if (config.debug) Colors2.debug({ msg: 'ERROR FOR: ' + Colors2.getPrettyJson({ obj }) });
-		Colors2.error({ msg: '*** *** ERROR', offset: 1 });
-		Colors2.error({ msg: Colors2.getPrettyJson({ obj }), offset: 1 });
-	}
+	// 	if (config.debug) Colors2.debug({ msg: 'ERROR FOR: ' + Colors2.getPrettyJson({ obj }) });
+	// 	Colors2.sfdxShowError({ msg: '*** *** ERROR' });
+	// 	Colors2.sfdxShowError({ msg: Colors2.getPrettyJson({ obj }) });
+	// }
 
 	static reportException({ config, msg, ex }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
@@ -23,14 +23,14 @@ export default class Logs {
 		if (ex.message) error.message = ex.message;
 		if (ex.stack) error.stack = ex.stack;
 		if (config.debug) Colors2.debug({ msg: 'ERROR FOR: ' + Colors2.getPrettyJson({ obj: error }) });
-		Colors2.error({ msg: Colors2.getPrettyJson({ obj: error }), offset: 1 });
+		Colors2.sfdxShowError({ msg: Colors2.getPrettyJson({ obj: error }) });
 	}
 
 	static reportErrorMessage({ config, msg }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: msg, message: 'msg' });
 
-		Colors2.error({ msg, offset: 1 });
+		Colors2.sfdxShowError({ msg });
 	}
 
 	static async promptYesNo({ config, question }) {

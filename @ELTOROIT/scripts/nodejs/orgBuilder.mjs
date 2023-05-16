@@ -49,7 +49,7 @@ export default class OrgBuilder {
 	}
 
 	async _readConfigFile() {
-		Colors2.writeInstruction({ msg: 'Reading configuration file' });
+		Colors2.sfdxShowStatus({ status: 'Reading configuration file' });
 		let configFileName = await OS2.getFullPath({ config, relativePath: './@ELTOROIT/scripts/nodejs/orgBuilder.jsonc' });
 		let configJSONC = await OS2.readFile({ config, path: configFileName });
 		config.SFDX = parse(configJSONC);

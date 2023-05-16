@@ -7,101 +7,16 @@ export default class Colors {
 		console.log(clearScreenCode);
 	}
 
-	static writeInstruction({ msg }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-		console.log(colorBgBlack + colorBright + colorFgMagenta + msg + colorReset);
-	}
-
-	static writeMessage({ msg }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-		console.log(colorBgBlack + colorBright + colorFgCyan + msg + colorReset);
-	}
-
 	static debug({ msg }) {
 		ET_Asserts.hasData({ value: msg, message: 'msg' });
 
-		console.log(colorBgBlack + colorBright + colorFgGray + Colors.getTrace({}) + msg + colorReset);
-	}
-
-	static error({ msg, offset }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-		if (!offset) offset = 0;
-
-		console.log(colorBgBlack + colorBright + colorFgRed + Colors.getTrace({}) + msg + colorReset);
+		console.log(colorBgBlack + colorBright + colorFgGray + msg + colorReset);
 	}
 
 	static getPrettyJson({ obj }) {
 		ET_Asserts.hasData({ value: obj, message: 'obj' });
 
 		return JSON.stringify(obj, null, 4);
-	}
-
-	static getPromptMsg({ msg }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-
-		return colorBgBlack + colorBright + colorFgYellow + msg + colorReset;
-	}
-
-	static getTime() {
-		let date = new Date();
-		let hour = `${date.getHours()}`.padStart(2, '0');
-		let minutes = `${date.getMinutes()}`.padStart(2, '0');
-		let seconds = `${date.getSeconds()}`.padStart(2, '0');
-		let milliseconds = `${date.getMilliseconds()}`.padStart(3, '0');
-
-		return `[${hour}:${minutes}:${seconds}.${milliseconds}]`;
-	}
-
-	static getTrace({ offset }) {
-		if (!offset) offset = 0;
-
-		let prefix = '';
-		if (showTimestamp) {
-			prefix += Colors.getTime();
-		}
-		if (showLineNumbers) {
-			try {
-				throw new Error();
-			} catch (e) {
-				if (typeof e.stack === 'string') {
-					let linePart = 1;
-
-					let lines = e.stack.split('\n');
-					let line = lines[3 + offset];
-
-					// console.log(colorBgBlack + colorBright + colorFgMagenta  + line + colorReset);
-					if (line.toLowerCase().indexOf('c:\\th\\') > 0) linePart++;
-					prefix += '[' + line.split(':')[linePart] + ']';
-				}
-			}
-		}
-		return prefix + (prefix.length > 1 ? ': ' : '');
-	}
-
-	static info({ msg }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-
-		console.log(colorBgBlack + colorBright + colorFgWhite + Colors.getTrace({}) + msg + colorReset);
-	}
-
-	static promptMsg({ msg }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-
-		console.log(Colors.getPromptMsg({ msg }));
-	}
-
-	static setDebug({ isDebug }) {
-		debugger;
-		ET_Asserts.hasData({ value: isDebug, message: 'isDebug' });
-
-		showTimestamp = isDebug;
-		showLineNumbers = isDebug;
-	}
-
-	static success({ msg }) {
-		ET_Asserts.hasData({ value: msg, message: 'msg' });
-
-		console.log(colorBgBlack + colorBright + colorFgGreen + Colors.getTrace({}) + msg + colorReset);
 	}
 
 	static sfdxShowCommand({ command }) {
@@ -114,6 +29,18 @@ export default class Colors {
 		ET_Asserts.hasData({ value: status, message: 'status' });
 
 		console.log(colorBgBlack + colorBright + colorFgMagenta + status + colorReset);
+	}
+
+	static sfdxShowError({ msg }) {
+		ET_Asserts.hasData({ value: msg, message: 'msg' });
+
+		console.log(colorBgBlack + colorBright + colorFgRed + msg + colorReset);
+	}
+
+	static sfdxShowSuccess({ msg }) {
+		ET_Asserts.hasData({ value: msg, message: 'msg' });
+
+		console.log(colorBgBlack + colorBright + colorFgGreen + msg + colorReset);
 	}
 
 	static sfdxShowComplete() {

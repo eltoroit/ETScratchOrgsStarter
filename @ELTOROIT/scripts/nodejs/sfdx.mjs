@@ -52,7 +52,7 @@ export default class SFDX {
 				}
 				throw new Error(msg);
 			} else {
-				Colors2.success({ msg: etcd[0] });
+				Colors2.sfdxShowSuccess({ msg: etcd[0] });
 			}
 		}
 	}
@@ -210,12 +210,12 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 10. Install Package(s) before push
+	// 10. Install Packages before push
 	async BeforePush_InstallPackages({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		config.currentStep = '10. Install Package(s) before push';
+		config.currentStep = '10. Install Packages before push';
 		commandParts = {
 			pre: 'sf package install --apex-compile=all --package "',
 			post: '" --wait=30 --no-prompt --json',
@@ -471,23 +471,24 @@ export default class SFDX {
 			await OS2.writeFile({ config, path: `${config.rootLogs}/_errors.txt`, data });
 		};
 
+		config.currentStep = '99. ShowFinalSuccess';
 		await processCommands();
 		await processErrors();
 		if (config.SFDX.ShowFinalSuccess) {
 			if (config.errors.length > 0) {
-				Colors2.error({ msg: '' });
-				Colors2.error({ msg: '*** *** *** *** *** *** *** *** *** ***' });
-				Colors2.error({ msg: '*** ***  Completed with errors  *** ***' });
-				Colors2.error({ msg: '*** *** *** *** *** *** *** *** *** ***' });
-				Colors2.error({ msg: '' });
+				Colors2.sfdxShowError({ msg: '' });
+				Colors2.sfdxShowError({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.sfdxShowError({ msg: '*** ***  Completed with errors  *** ***' });
+				Colors2.sfdxShowError({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.sfdxShowError({ msg: '' });
 				config.errors.forEach((error) => {
-					Colors2.error({ msg: error });
+					Colors2.sfdxShowError({ msg: error });
 				});
 			} else {
-				Colors2.success({ msg: '' });
-				Colors2.success({ msg: '*** *** *** *** *** *** *** *** *** ***' });
-				Colors2.success({ msg: '*** ***  Completed succesfully  *** ***' });
-				Colors2.success({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.sfdxShowSuccess({ msg: '' });
+				Colors2.sfdxShowSuccess({ msg: '*** *** *** *** *** *** *** *** *** ***' });
+				Colors2.sfdxShowSuccess({ msg: '*** ***  Completed succesfully  *** ***' });
+				Colors2.sfdxShowSuccess({ msg: '*** *** *** *** *** *** *** *** *** ***' });
 			}
 		}
 	}
@@ -605,7 +606,7 @@ export default class SFDX {
 				throw result;
 			}
 			await logResults();
-			Colors2.success({ msg: `${new Date()} | ${config.currentStep} | Succesfully completed` });
+			Colors2.sfdxShowSuccess({ msg: `${new Date()} | ${config.currentStep} | Succesfully completed` });
 			return result;
 		} catch (ex) {
 			await logResults();
@@ -636,11 +637,11 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
 		let step = config.currentStep;
-		if (config.currentStep[2] !== '.') {
-			step = step.slice(0, 2) + step.slice(3);
-		}
-		step = step.replace(/\(.*?\)/g, '');
-		step = step.trim();
+		// if (config.currentStep[2] !== '.') {
+		// 	step = step.slice(0, 2) + step.slice(3);
+		// }
+		// step = step.replace(/\(.*?\)/g, '');
+		// step = step.trim();
 		Colors2.sfdxShowStatus({ status: '' });
 		Colors2.sfdxShowStatus({ status: `${step} --- Skipped` });
 	}
@@ -649,6 +650,6 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
 		// this._showStepSkipped({ config });
-		Colors2.error({ msg: 'Stop ignored because there is no user in the screen, running in CICD mode' });
+		Colors2.sfdxShowError({ msg: 'Stop ignored because there is no user in the screen, running in CICD mode' });
 	}
 }

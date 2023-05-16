@@ -31,6 +31,12 @@ export default class Colors {
 		console.log(colorBgBlack + colorBright + colorFgMagenta + status + colorReset);
 	}
 
+	static sfdxShowNote({ msg }) {
+		ET_Asserts.hasData({ value: msg, message: 'msg' });
+
+		console.log(colorBgBlack + colorBright + colorFgWhite + msg + colorReset);
+	}
+
 	static sfdxShowError({ msg }) {
 		ET_Asserts.hasData({ value: msg, message: 'msg' });
 

@@ -52,7 +52,7 @@ export default class SFDX {
 				}
 				throw new Error(msg);
 			} else {
-				Colors2.sfdxShowSuccess({ msg: etcd[0] });
+				Colors2.sfdxShowNote({ msg: etcd[0] });
 			}
 		}
 	}
@@ -83,7 +83,7 @@ export default class SFDX {
 			let org = orgs.find((org) => org.alias === config.SFDX.alias);
 			if (org) {
 				config.currentStep = '03b. Backup current org alias (Create backup alias)';
-				command = `sf alias set ${config.SFDX.alias}.bak="${org.value}" --json`;
+				command = `sf alias set ${config.SFDX.alias}.${new Date().toJSON().replaceAll('-', '').replaceAll(':', '').split('.')[0].slice(0, 13)}="${org.value}" --json`;
 				logFile = '03b_BeforeOrg_BackupAlias.json';
 				await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
 			}
@@ -432,7 +432,7 @@ export default class SFDX {
 				let data = Colors2.getPrettyJson({ obj });
 				let path = `${config.rootLogs}/_user.json`;
 				await OS2.writeFile({ config, path, data });
-				Colors2.sfdxShowMessage({ msg: `User credentials are saved in this file: ${path}` });
+				Colors2.sfdxShowNote({ msg: `User credentials are saved in this file: ${path}` });
 			}
 		}
 	}
@@ -666,6 +666,6 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
 		// this._showStepSkipped({ config });
-		Colors2.sfdxShowError({ msg: 'Stop ignored because there is no user in the screen, running in CICD mode' });
+		Colors2.sfdxShowNote({ msg: 'Stop ignored because there is no user in the screen, running in CICD mode' });
 	}
 }

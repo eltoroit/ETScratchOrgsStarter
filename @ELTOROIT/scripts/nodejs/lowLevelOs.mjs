@@ -188,7 +188,7 @@ export default class LowLevelOS {
 				report({ eventName: 'CLOSE', data: { code, signal } });
 				// Let ths process cool off, if running in debug mode. I saw that VS Code debugger chokes :-)
 				const isDebug = !!process.execArgv.find((arg) => arg.includes('--inspect'));
-				const timeout = isDebug ? 7.5e3 : 0;
+				const timeout = isDebug ? 5e3 : 0;
 				if (isDebug) {
 					Colors2.debug({ msg: `Waiting ${timeout / 1000} seconds for the procees to cool off while the debugger catches up` });
 				}

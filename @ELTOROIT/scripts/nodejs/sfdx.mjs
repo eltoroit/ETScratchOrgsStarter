@@ -8,7 +8,6 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
 		for (const step of config.steps) {
-			// console.log(`*** *** Step: ${step}`);
 			if (this[step]) {
 				try {
 					await this[step]({ config });
@@ -31,7 +30,8 @@ export default class SFDX {
 		}
 	}
 
-	// 01. Validate ETCopyData
+	//#region STEPS
+	/* 01. Validate ETCopyData */
 	async BeforeOrg_ValidateETCopyData({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -58,7 +58,7 @@ export default class SFDX {
 		}
 	}
 
-	// 02. Run JEST tests
+	/* 02. Run JEST tests */
 	async BeforeOrg_RunJestTests({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -70,7 +70,7 @@ export default class SFDX {
 		await this._runAndLog({ isGoingToRun: config.SFDX.BeforeOrg_RunJestTests, config, command, logFile });
 	}
 
-	// 03. Backup current org alias
+	/* 03. Backup current org alias */
 	async BeforeOrg_BackupAlias({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -93,7 +93,7 @@ export default class SFDX {
 		}
 	}
 
-	// 04. Create scratch org
+	/* 04. Create scratch org */
 	async CreateScratchOrg({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -112,7 +112,7 @@ export default class SFDX {
 		}
 	}
 
-	// 05. Pause to check org
+	/* 05. Pause to check org */
 	async BeforePush_PauseToCheckOrg({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -134,7 +134,7 @@ export default class SFDX {
 		}
 	}
 
-	// 06. Open deploy page to watch deployments
+	/* 06. Open deploy page to watch deployments */
 	async BeforePush_ShowDeployPage({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -146,7 +146,7 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_ShowDeployPage, config, command, logFile });
 	}
 
-	// 07. Prepare the org before push
+	/* 07. Prepare the org before push */
 	async BeforePush_PrepareOrg({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -167,7 +167,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 08. Open pages to manually configure org before push
+	/* 08. Open pages to manually configure org before push */
 	async BeforePush_ManualMetadata({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -198,7 +198,7 @@ export default class SFDX {
 		}
 	}
 
-	// 09. Execute Apex Anonymous code before push
+	/* 09. Execute Apex Anonymous code before push */
 	async BeforePush_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -219,7 +219,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 10. Install Packages before push
+	/* 10. Install Packages before push */
 	async BeforePush_InstallPackages({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -240,7 +240,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 11. Push metadata
+	/* 11. Push metadata */
 	async PushMetadata({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -252,7 +252,7 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.PushMetadata, config, command, logFile });
 	}
 
-	// 12. Prepare the org after push
+	/* 12. Prepare the org after push */
 	async AfterPush_PrepareOrg({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -273,7 +273,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 13. Open pages to manually configure org after push
+	/* 13. Open pages to manually configure org after push */
 	async AfterPush_ManualMetadata({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -304,7 +304,7 @@ export default class SFDX {
 		}
 	}
 
-	// 14. Execute Apex Anonymous code after push
+	/* 14. Execute Apex Anonymous code after push */
 	async AfterPush_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -325,7 +325,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 15. Assign permission sets to your user
+	/* 15. Assign permission sets to your user */
 	async AfterPush_AssignPermissionSets({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -346,7 +346,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 16. Deploy "Admin" standard profile
+	/* 16. Deploy "Admin" standard profile */
 	async AfterPush_DeployAdminProfile({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -385,7 +385,7 @@ export default class SFDX {
 		}
 	}
 
-	// 17. Load data using ETCopyData plugin
+	/* 17. Load data using ETCopyData plugin */
 	async ETCopyData({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -400,7 +400,7 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.ETCopyData, config, command, logFile });
 	}
 
-	// 18. Execute Apex Anonymous code after data load
+	/* 18. Execute Apex Anonymous code after data load */
 	async AfterData_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -421,7 +421,7 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	// 19. Run Apex tests
+	/* 19. Run Apex tests */
 	async AfterData_RunApexTests({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -433,7 +433,7 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_RunApexTests, config, command, logFile });
 	}
 
-	// 20. Publish community
+	/* 20. Publish community */
 	async AfterData_PublishCommunityName({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -445,7 +445,7 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_PublishCommunityName, config, command, logFile });
 	}
 
-	// 21. Generate Password
+	/* 21. Generate Password */
 	async AfterData_GeneratePassword({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile,
@@ -478,7 +478,7 @@ export default class SFDX {
 		}
 	}
 
-	// 22. Create Finest DebugLevel
+	/* 22. Create Finest DebugLevel */
 	async CreateFinestDebugLevel({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -504,7 +504,7 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.CreateFinestDebugLevel, config, command, logFile });
 	}
 
-	// 23. Deploy to sandbox
+	/* 23. Deploy to sandbox */
 	async DeployToSandbox({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -531,7 +531,7 @@ export default class SFDX {
 		}
 	}
 
-	// The end.
+	/* The end */
 	async ShowFinalSuccess({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
@@ -573,6 +573,7 @@ export default class SFDX {
 			}
 		}
 	}
+	//#endregion STEPS
 
 	async _runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts }) {
 		ET_Asserts.hasData({ value: isGoingToRun, message: 'isGoingToRun' });

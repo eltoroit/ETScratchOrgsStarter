@@ -1,8 +1,9 @@
 {
 	"alias": "soDEMO",
 	"days": 1,
+	"OpenBrowser": true,
 	"QuitOnErrors": false,
-	"UserOnScreen": false, // Can I prompt the user to continue? On CICD, this should be false
+	"UserOnScreen": true, // Can I prompt the user to continue? On CICD, this should be false
 	// Steps...
 	"BeforeOrg_ValidateETCopyData": true,
 	"BeforeOrg_RunJestTests": true,
@@ -15,6 +16,7 @@
 	"BeforePush_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
 	"BeforePush_InstallPackages": ["04tB0000000P1yA"], // Install required packages before pushing.
 	"PushMetadata": true,
+	"AfterPush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed after the push
 	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
 	"AfterPush_ExecuteApex": ["@ELTOROIT/scripts/apex/SetUserRecord.apex"],
 	"AfterPush_AssignPermissionSets": ["psTest"],
@@ -24,6 +26,7 @@
 	"AfterData_RunApexTests": true,
 	"AfterData_PublishCommunityName": "ABC",
 	"AfterData_GeneratePassword": true,
+	"CreateFinestDebugLevel": true,
 	"DeployToSandbox": { "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true },
 	"ShowFinalSuccess": true
 }

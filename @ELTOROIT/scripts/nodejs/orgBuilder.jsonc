@@ -14,7 +14,7 @@
 	"BeforePush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed first
 	"BeforePush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"], // Some metadata may need to be manually configured
 	"BeforePush_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
-	"BeforePush_InstallPackages": [{ "id": "04tB0000000P1yA", "password": "abcd1234" }], // Install required packages before pushing (password is optional and it can be left out)
+	// "BeforePush_InstallPackages": [{ "id": "04tB0000000P1yA", "password": "abcd1234" }], // Install required packages before pushing (password is optional and it can be left out)
 	"PushMetadata": true,
 	"AfterPush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed after the push
 	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
@@ -24,10 +24,10 @@
 	"ETCopyData": "./@ELTOROIT/data",
 	"AfterData_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
 	"AfterData_RunApexTests": true,
-	"AfterData_PublishCommunityName": "ABC",
+	// "AfterData_PublishCommunityName": "ABC",
 	"AfterData_GeneratePassword": true,
 	"CreateFinestDebugLevel": true,
-	"DeployToSandbox": { "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true },
+	// "DeployToSandbox": { "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true },
 	// STEPS - END
 	"ShowFinalSuccess": true
 }

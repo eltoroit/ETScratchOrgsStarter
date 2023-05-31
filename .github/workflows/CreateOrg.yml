@@ -23,11 +23,15 @@ jobs:
                   mkdir sfdx-cli
                   tar xJf sfdx-linux-x64.tar.xz -C ./sfdx-cli --strip-components 1
                   export PATH=./sfdx-cli/bin:$PATH
-                  sfdx update
-                  sfdx force:lightning:lwc:test:setup
+                  echo $PATH
+                  sfdx update > etLogs/sfdx_update
+                  sfdx force:lightning:lwc:test:setup > etLogs/sfdx_lwcTestSetup
+                  sfdx --version
             - name: Install ETCopyData tools
               # run: echo 'y' | sfdx plugins:install etcopydata@beta
               run: |
+                  echo $PATH
+                  sfdx --version
                   git clone https://github.com/eltoroit/ETCopyData.git
                   cd ETCopyData
                   npm install

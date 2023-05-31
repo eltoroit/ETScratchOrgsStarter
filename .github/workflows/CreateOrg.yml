@@ -12,12 +12,13 @@ jobs:
               with:
                   node-version: 18
             - name: Show Node.js version
-              run: node -v
+              run: |
+                  node -v
             - name: Create etLogs folder
-              run: mkdir -p etLogs
+              run: |
+                  mkdir -p etLogs
             - name: Install Salesforce tools
               run: |
-                  echo "PWD" && pwd
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q
                   mkdir $HOME/sfdx-cli
                   tar xJf sfdx-linux-x64.tar.xz -C $HOME/sfdx-cli --strip-components 1
@@ -27,9 +28,9 @@ jobs:
                   sfdx update > etLogs/sfdx_update.out 2>etLogs/sfdx_update.err
                   sfdx force:lightning:lwc:test:setup > etLogs/sfdx_lwcTestSetup.out 2>etLogs/sfdx_lwcTestSetup.err
                   sfdx --version
+                  sf --version
             - name: Install ETCopyData tools
               run: |
-                  echo "PWD" && pwd
                   cd $HOME
                   git clone https://github.com/eltoroit/ETCopyData.git
                   cd ETCopyData
@@ -38,15 +39,17 @@ jobs:
             # sf org display --target-org <ORG_ALIAS> --verbose --json
             # https://github.com/eltoroit/<REPO>/settings/secrets/actions/new
             - name: Export token
-              run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
+              run: |
+                  echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
+                  ls -la
             - name: Register DevHub
               run: |
-                  echo "PWD" && pwd
-                  cat "etLogs/token.txt"
+                  ls -la
                   sf org login sfdx-url --sfdx-url-file "etLogs/token.txt" --set-default-dev-hub --alias DevHub
             # Create scratch org
             - name: Create Scratch Org
-              run: node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs
+              run: |
+                  node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs
             # Upload logs as artifacts
             - uses: actions/upload-artifact@v2
               with:

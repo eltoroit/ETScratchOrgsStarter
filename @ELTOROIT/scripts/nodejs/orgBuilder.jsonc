@@ -14,7 +14,7 @@
 	"BeforePush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed first
 	"BeforePush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"], // Some metadata may need to be manually configured
 	"BeforePush_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
-	"BeforePush_InstallPackages": ["04tB0000000P1yA"], // Install required packages before pushing.
+	"BeforePush_InstallPackages": [{ "id": "04tB0000000P1yA", "password": "abcd1234" }], // Install required packages before pushing (password is optional and it can be left out)
 	"PushMetadata": true,
 	"AfterPush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed after the push
 	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],

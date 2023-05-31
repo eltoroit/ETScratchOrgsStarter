@@ -237,7 +237,23 @@ export default class SFDX {
 		};
 		listValues = config.SFDX.BeforePush_InstallPackages;
 		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
-		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+		await this._runSFDXArray({
+			isGoingToRun,
+			listValues,
+			config,
+			commandParts,
+			logFileParts,
+			commandMaker: (value) => {
+				debugger;
+				let output = '';
+				if (value.password) {
+					output = `${commandParts.pre}${value.id}" --installation-key="${value.password}${commandParts.post}`;
+				} else {
+					output = `${commandParts.pre}${value.id}${commandParts.post}`;
+				}
+				return output;
+			},
+		});
 	}
 
 	/* 11. Push metadata */
@@ -575,7 +591,7 @@ export default class SFDX {
 	}
 	//#endregion STEPS
 
-	async _runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts }) {
+	async _runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts, commandMaker = null }) {
 		ET_Asserts.hasData({ value: isGoingToRun, message: 'isGoingToRun' });
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: commandParts, message: 'commandParts' });
@@ -597,7 +613,7 @@ export default class SFDX {
 					try {
 						let step = `${logFileParts.step}${String.fromCharCode('a'.charCodeAt(0) + idx)}`;
 						config.currentStep = `${step}. ${tmpCurrentStep} (multi-item)`;
-						command = `${commandParts.pre}${listValues[idx]}${commandParts.post}`;
+						command = commandMaker ? commandMaker(listValues[idx]) : `${commandParts.pre}${listValues[idx]}${commandParts.post}`;
 						logFile = `${step}_${logFileParts.pre}${logFileParts.post}`;
 						await this._runSFDX({ isGoingToRun, config, command, logFile });
 					} catch (ex) {

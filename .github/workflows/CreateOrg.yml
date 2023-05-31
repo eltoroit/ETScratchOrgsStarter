@@ -47,8 +47,11 @@ jobs:
               run: |
                   node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs
             # Upload logs as artifacts
-            - uses: actions/upload-artifact@v2
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v3
+              if: always()
               with:
                   name: logs
-                  path: |
-                      etLogs
+                  path: etLogs
+                  if-no-files-found: error
+                  retention-days: 90

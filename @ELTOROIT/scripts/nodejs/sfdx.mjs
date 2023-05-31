@@ -114,6 +114,7 @@ export default class SFDX {
 
 	/* 05. Pause to check org */
 	async BeforePush_PauseToCheckOrg({ config }) {
+		debugger;
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 

@@ -58,11 +58,19 @@ export default class Colors {
 		ET_Asserts.hasData({ value: msg, message: 'msg' });
 		console.log(colorBgBlack + colorBright + colorFgCyan + msg + colorReset);
 	}
+
+	static sfdxPromptMessage({ msg }) {
+		ET_Asserts.hasData({ value: msg, message: 'msg' });
+		console.log(this.getPromptMessage({ msg }));
+	}
+
+	static getPromptMessage({ msg }) {
+		ET_Asserts.hasData({ value: msg, message: 'msg' });
+		return colorBgBlack + colorBright + colorFgYellow + msg + colorReset;
+	}
 }
 
 // Define variables
-let showTimestamp = false;
-let showLineNumbers = false;
 let clearScreenCode = '\x1B[2J';
 
 // Color Modes

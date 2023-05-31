@@ -28,13 +28,13 @@ export default class Logs {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: question, message: 'question' });
 
-		Colors2.promptMsg({ msg: question });
+		Colors2.sfdxPromptMessage({ msg: question });
 		const rl = readline.createInterface({ input, output });
 
 		// Can't use async/await because I need a loop
 		return new Promise((resolve) => {
 			async function loop() {
-				const answer = await rl.question(Colors2.getPromptMsg({ msg: '[Y/N] > ' }));
+				const answer = await rl.question(Colors2.getPromptMessage({ msg: '[Y/N] > ' }));
 				if (answer[0].toUpperCase() === 'Y') {
 					rl.close();
 					resolve(true);

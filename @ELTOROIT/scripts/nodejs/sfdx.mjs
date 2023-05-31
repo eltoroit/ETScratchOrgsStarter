@@ -36,7 +36,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_01';
+		const stepNumber = '01';
 		config.currentStep = `${stepNumber}. Validate ETCopyData`;
 		command = 'sfdx plugins';
 		logFile = `${stepNumber}_BeforeOrg_ValidateETCopyData.json`;
@@ -63,7 +63,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_02';
+		const stepNumber = '02';
 		config.currentStep = `${stepNumber}. Run JEST tests`;
 		command = 'node node_modules/@salesforce/sfdx-lwc-jest/bin/sfdx-lwc-jest';
 		logFile = `${stepNumber}_BeforeOrg_RunJestTests.json`;
@@ -75,7 +75,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_03';
+		const stepNumber = '03';
 		config.currentStep = `${stepNumber}a. Backup current org alias (Find orgs)`;
 		command = 'sf alias list --json';
 		logFile = `${stepNumber}a_BeforeOrg_BackupAlias.json`;
@@ -98,7 +98,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_04';
+		const stepNumber = '04';
 		config.currentStep = `${stepNumber}a. Create scratch org (Create new org)`;
 		command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.SFDX.alias}" --duration-days="${config.SFDX.days}" --json`;
 		logFile = `${stepNumber}a_CreateScratchOrg.json`;
@@ -117,7 +117,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_05';
+		const stepNumber = '05';
 		config.currentStep = `${stepNumber}. Pause to check org`;
 		command = 'sf org open --json';
 		logFile = `${stepNumber}_BeforePush_PauseToCheckOrg.json`;
@@ -139,7 +139,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_06';
+		const stepNumber = '06';
 		config.currentStep = `${stepNumber}. Open deploy page to watch deployments`;
 		command = `sf org open --path="${config.deployPage}" --json`;
 		logFile = `${stepNumber}_BeforePush_ShowDeployPage.json`;
@@ -151,7 +151,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_07';
+		const stepNumber = '07';
 		config.currentStep = `${stepNumber}. Prepare the org before push`;
 		commandParts = {
 			pre: 'sfdx project deploy start --source-dir="',
@@ -172,7 +172,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_08';
+		const stepNumber = '08';
 		config.currentStep = `${stepNumber}. Open pages to manually configure org before push`;
 		commandParts = {
 			pre: 'sf org open --path="',
@@ -203,7 +203,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_09';
+		const stepNumber = '09';
 		config.currentStep = `${stepNumber}. Execute Apex Anonymous code before push`;
 		commandParts = {
 			pre: 'sf apex run -f "',
@@ -224,7 +224,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_10';
+		const stepNumber = '10';
 		config.currentStep = `${stepNumber}. Install Packages before push`;
 		commandParts = {
 			pre: 'sf package install --apex-compile=all --package "',
@@ -245,7 +245,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_11';
+		const stepNumber = '11';
 		config.currentStep = `${stepNumber}. Push metadata`;
 		command = 'sfdx project deploy start --ignore-conflicts --wait=30 --json';
 		logFile = `${stepNumber}_PushMetadata.json`;
@@ -257,7 +257,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_12';
+		const stepNumber = '12';
 		config.currentStep = `${stepNumber}. Prepare the org after push`;
 		commandParts = {
 			pre: 'sfdx project deploy start --source-dir="',
@@ -278,7 +278,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_13';
+		const stepNumber = '13';
 		config.currentStep = `${stepNumber}. Open pages to manually configure org after push`;
 		commandParts = {
 			pre: 'sf org open --path="',
@@ -309,7 +309,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_14';
+		const stepNumber = '14';
 		config.currentStep = `${stepNumber}. Execute Apex Anonymous code after push`;
 		commandParts = {
 			pre: 'sf apex run --file="',
@@ -330,7 +330,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_15';
+		const stepNumber = '15';
 		config.currentStep = `${stepNumber}. Assign permission sets to your user`;
 		commandParts = {
 			pre: 'sf force user permset assign --perm-set-name="',
@@ -351,7 +351,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_16';
+		const stepNumber = '16';
 		config.currentStep = `${stepNumber}. Deploy "Admin" standard profile`;
 		command = `sfdx project deploy start --source-dir="${config.SFDX.AfterPush_DeployAdminProfile}" --ignore-conflicts --wait=30 --verbose --json`;
 		logFile = `${stepNumber}_AfterPush_DeployAdminProfile.json`;
@@ -390,7 +390,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_17';
+		const stepNumber = '17';
 		config.currentStep = `${stepNumber}. Load data using ETCopyData plugin`;
 		// sfdx ETCopyData delete --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
 		// sfdx ETCopyData export --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
@@ -405,7 +405,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
 
-		const stepNumber = '_18';
+		const stepNumber = '18';
 		config.currentStep = `${stepNumber}. Execute Apex Anonymous code after data load`;
 		commandParts = {
 			pre: 'sf apex run --file="',
@@ -426,7 +426,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_19';
+		const stepNumber = '19';
 		config.currentStep = `${stepNumber}. Run Apex tests`;
 		command = 'sf apex run test --code-coverage --json --result-format=json --wait=60';
 		logFile = `${stepNumber}_AfterData_RunApexTests.json`;
@@ -438,7 +438,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '_20';
+		const stepNumber = '20';
 		config.currentStep = `${stepNumber}. Publish community`;
 		command = `sf community publish --name "${config.SFDX.AfterData_PublishCommunityName}" --json`;
 		logFile = `${stepNumber}_AfterData_PublishCommunityName.json`;
@@ -452,7 +452,7 @@ export default class SFDX {
 			command,
 			tmpCommand = {};
 
-		const stepNumber = '_21';
+		const stepNumber = '21';
 		config.currentStep = `${stepNumber}a. Generate Password (Create)`;
 		command = 'sf force user password generate --json';
 		logFile = `${stepNumber}a_AfterData_GeneratePassword.json`;
@@ -497,7 +497,7 @@ export default class SFDX {
 		values += 'Wave=FINEST ';
 		values += 'Nba=FINEST ';
 
-		const stepNumber = '_22';
+		const stepNumber = '22';
 		config.currentStep = `${stepNumber}. Create Finest DebugLevel`;
 		command = `sf data create record --use-tooling-api --sobject=DebugLevel --values="${values}" --json`;
 		logFile = `${stepNumber}_CreateFinestDebugLevel.json`;
@@ -509,7 +509,7 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		let stepNumber = '_23';
+		let stepNumber = '23';
 		config.currentStep = `${stepNumber}. Deploy to sandbox`;
 		if (config.SFDX.DeployToSandbox) {
 			config.currentStep = `${stepNumber}a. Deploy to sandbox (Open Deploy page)`;
@@ -551,7 +551,7 @@ export default class SFDX {
 			await OS2.writeFile({ config, path: `${config.rootLogs}/_errors.txt`, data });
 		};
 
-		let stepNumber = '_99';
+		let stepNumber = '99';
 		config.currentStep = `${stepNumber}. ShowFinalSuccess`;
 		await processCommands();
 		await processErrors();

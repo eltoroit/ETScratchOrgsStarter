@@ -22,12 +22,13 @@ jobs:
             # echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Write sfdxUrl to a temp file
               run: |
-                  ls -la $HOME
-                  echo "TOKEN"
-                  echo ${{vars.DEVHUB_TOKEN}}
+                  echo "*** *** *** 1"
                   echo ${{vars.DEVHUB_TOKEN}} > $HOME/token.txt
-                  ls -la $HOME
+                  echo "*** *** *** 2"
+                  ls -la $HOME/token.txt
+                  echo "*** *** *** 3"
                   cat $HOME/token.txt
+                  echo "*** *** *** 4"
             - name: Install Salesforce tools
               run: |
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q

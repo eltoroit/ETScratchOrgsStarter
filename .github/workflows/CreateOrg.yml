@@ -1,4 +1,4 @@
-name: "ELTOROIT Test Scratch Org"
+name: "ELTOROIT CICD Test Scratch Org"
 on: [push]
 jobs:
     build:
@@ -13,13 +13,8 @@ jobs:
                   node-version: 16
             - name: Show Node.js version
               run: node -v
-            - name: Create etLogs folder
-              run: mkdir -p etLogs
-            - name: PWD
-              run: pwd
-              if: ${{ env.ET_CICD  }}
             - name: Export token
-              run: echo ${{ secrets.DEVHUB_TOKEN}} > etLogs/token.txt
+              run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Install Salesforce tools
               run: |
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
@@ -38,43 +33,8 @@ jobs:
             - name: Register DevHub
               run: sfdx force:auth:sfdxurl:store -f etLogs/token.txt --setalias DevHub --setdefaultdevhubusername
             # Create scratch org
-            - name: Run Jest
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainRunJest
-            - uses: actions/upload-artifact@v2
-              if: failure()
-              with:
-                  name: ERROR_JEST_TESTS
-                  path: etLogs/jestTests.json
             - name: Create Scratch Org
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainCreateScratchOrg
-            - name: Execute Apex Before Deployment
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainExecuteApexBeforePush
-            - name: Install Packages
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainInstallPackages
-            - name: Deploy Metadata
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainDeploy
-            - uses: actions/upload-artifact@v2
-              if: failure()
-              with:
-                  name: ERROR_DEPLOY
-                  path: etLogs/deploy.json
-            - name: Execute Apex After Deployment
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainExecuteApexAfterPush
-            - name: Assign Permission Set
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainAssignPermissionSet
-            - name: Load Data
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainLoadData
-            - name: Execute Apex After Data
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainExecuteApexAfterData
-            - name: Generate Password
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainGeneratePassword
-            - name: Run Apex Tests
-              run: ./@ELTOROIT/scripts/shell/CreateOrg.sh mainRunApexTests
-            - uses: actions/upload-artifact@v2
-              if: failure()
-              with:
-                  name: ERROR_APEXT_TESTS
-                  path: etLogs/apexTests.json
+              run: node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs
             # Upload logs as artifacts
             - uses: actions/upload-artifact@v2
               with:

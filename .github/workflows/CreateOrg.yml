@@ -19,16 +19,10 @@ jobs:
                   mkdir -p etLogs
             # sf org display --target-org <ORG_ALIAS> --verbose --json
             # https://github.com/eltoroit/<REPO>/settings/secrets/actions/new
-            # echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
+            # echo ${{secrets.DEVHUB_TOKEN}} > $HOME/token.txt
             - name: Write sfdxUrl to a temp file
               run: |
-                  echo "*** *** *** 1"
                   echo "${{vars.DEVHUB_TOKEN}}" > $HOME/token.txt
-                  echo "*** *** *** 2"
-                  ls -la $HOME/token.txt
-                  echo "*** *** *** 3"
-                  cat $HOME/token.txt
-                  echo "*** *** *** 4"
             - name: Install Salesforce tools
               run: |
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q

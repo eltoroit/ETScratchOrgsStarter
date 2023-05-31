@@ -3,7 +3,7 @@
 	"days": 1,
 	"OpenBrowser": true,
 	"QuitOnErrors": false,
-	"UserOnScreen": true, // Can I prompt the user for manual verification? On CICD, this should be false
+	"UserOnScreen": false, // Can I prompt the user for manual verification? On CICD, this should be false
 	// STEPS - START
 	"BeforeOrg_ValidateETCopyData": true,
 	"BeforeOrg_RunJestTests": true,

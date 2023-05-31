@@ -48,6 +48,9 @@ export default class OrgBuilder {
 		await this._readConfigFile();
 		await this._restartLogFolder();
 		await this.sfdx.processSteps({ config });
+		if (config.errors.length > 0) {
+			process.exit(-1);
+		}
 	}
 
 	async _readConfigFile() {

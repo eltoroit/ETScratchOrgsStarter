@@ -19,7 +19,7 @@ jobs:
               run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Install Salesforce tools
               run: |
-                  wget https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz -q
+                  wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.gz -q
                   mkdir sfdx-cli
                   tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
                   ./sfdx-cli/install

@@ -17,6 +17,14 @@ jobs:
             - name: Create etLogs folder
               run: |
                   mkdir -p etLogs
+            # sf org display --target-org <ORG_ALIAS> --verbose --json
+            # https://github.com/eltoroit/<REPO>/settings/secrets/actions/new
+            # echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
+            - name: Write sfdxUrl to a temp file
+              run: |
+                  ls -la $HOME
+                  echo ${{env.DEVHUB_TOKEN}} > $HOME/token.txt
+                  ls -la $HOME
             - name: Install Salesforce tools
               run: |
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q
@@ -41,10 +49,7 @@ jobs:
             # echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Register DevHub
               run: |
-                  ls -la etLogs
-                  echo ${{env.DEVHUB_TOKEN}} > etLogs/token.txt
-                  ls -la etLogs
-                  sf org login sfdx-url --sfdx-url-file "etLogs/token.txt" --set-default-dev-hub --alias DevHub
+                  sf org login sfdx-url --sfdx-url-file "$HOME/token.txt" --set-default-dev-hub --alias DevHub
             # Create scratch org
             - name: Create Scratch Org
               run: |
@@ -55,4 +60,3 @@ jobs:
                   name: logs
                   path: |
                       etLogs
-                      !etLogs/token.txt

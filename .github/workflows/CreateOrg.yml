@@ -30,7 +30,7 @@ jobs:
                   git clone https://github.com/eltoroit/ETCopyData.git
                   cd ETCopyData
                   npm install
-                  sfdx plugins:link .
+                  sfdx plugins:link
                   cd ..
             - name: Register DevHub
               run: sfdx force:auth:sfdxurl:store -f "etLogs/token.txt" --setalias DevHub --setdefaultdevhubusername

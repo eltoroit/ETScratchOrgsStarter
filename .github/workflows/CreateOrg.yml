@@ -19,29 +19,29 @@ jobs:
               run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Install Salesforce tools
               run: |
-                  pwd
-                  echo $HOME
-                  ls -la $HOME
+                  echo "PWD" && pwd
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q
                   mkdir $HOME/sfdx-cli
                   tar xJf sfdx-linux-x64.tar.xz -C $HOME/sfdx-cli --strip-components 1
                   export PATH=$HOME/sfdx-cli/bin:$PATH
                   echo "$PATH" >> $GITHUB_PATH
+                  echo "$PATH"
                   sfdx update > etLogs/sfdx_update.out 2>etLogs/sfdx_update.err
                   sfdx force:lightning:lwc:test:setup > etLogs/sfdx_lwcTestSetup.out 2>etLogs/sfdx_lwcTestSetup.err
                   sfdx --version
             - name: Install ETCopyData tools
-              # run: echo 'y' | sfdx plugins:install etcopydata@beta
               run: |
-                  sfdx --version
+                  echo "PWD" && pwd
+                  cd $HOME
                   git clone https://github.com/eltoroit/ETCopyData.git
                   cd ETCopyData
                   npm install
-                  sfdx --version
                   sfdx plugins:link
-                  cd ..
             - name: Register DevHub
-              run: sfdx force:auth:sfdxurl:store -f "etLogs/token.txt" --setalias DevHub --setdefaultdevhubusername
+              run: |
+                  echo "PWD" && pwd
+                  cat "etLogs/token.txt"
+                  sfdx force:auth:sfdxurl:store -f "etLogs/token.txt" --setalias DevHub --setdefaultdevhubusername
             # Create scratch org
             - name: Create Scratch Org
               run: node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs

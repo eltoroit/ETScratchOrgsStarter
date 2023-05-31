@@ -23,7 +23,7 @@ jobs:
             - name: Write sfdxUrl to a temp file
               run: |
                   echo "*** *** *** 1"
-                  echo ${{vars.DEVHUB_TOKEN}} > $HOME/token.txt
+                  echo "${{vars.DEVHUB_TOKEN}}" > $HOME/token.txt
                   echo "*** *** *** 2"
                   ls -la $HOME/token.txt
                   echo "*** *** *** 3"

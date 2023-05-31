@@ -3,11 +3,11 @@
 	"days": 1,
 	"OpenBrowser": true,
 	"QuitOnErrors": false,
-	"UserOnScreen": true, // Can I prompt the user to continue? On CICD, this should be false
-	// Steps...
+	"UserOnScreen": true, // Can I prompt the user for manual verification? On CICD, this should be false
+	// STEPS - START
 	"BeforeOrg_ValidateETCopyData": true,
 	"BeforeOrg_RunJestTests": true,
-	"BeforeOrg_BackupAlias": true, // Backup alias, in case you need to go back to the old org :-)
+	"BeforeOrg_BackupAlias": true, // In case you need to go back to the old org :-)
 	"CreateScratchOrg": true,
 	"BeforePush_PauseToCheckOrg": true,
 	"BeforePush_ShowDeployPage": true,
@@ -28,6 +28,7 @@
 	"AfterData_GeneratePassword": true,
 	"CreateFinestDebugLevel": true,
 	"DeployToSandbox": { "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true },
+	// STEPS - END
 	"ShowFinalSuccess": true
 }
 

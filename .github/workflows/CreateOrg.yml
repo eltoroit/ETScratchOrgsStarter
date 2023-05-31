@@ -10,7 +10,7 @@ jobs:
             - uses: actions/checkout@v3
             - uses: actions/setup-node@v3
               with:
-                  node-version: 16
+                  node-version: 18
             - name: Show Node.js version
               run: node -v
             - name: Create etLogs folder
@@ -33,7 +33,7 @@ jobs:
                   sfdx plugins:link .
                   cd ..
             - name: Register DevHub
-              run: sfdx force:auth:sfdxurl:store -f etLogs/token.txt --setalias DevHub --setdefaultdevhubusername
+              run: sfdx force:auth:sfdxurl:store -f "etLogs/token.txt" --setalias DevHub --setdefaultdevhubusername
             # Create scratch org
             - name: Create Scratch Org
               run: node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs

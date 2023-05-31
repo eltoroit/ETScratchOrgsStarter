@@ -1,0 +1,35 @@
+{
+	"alias": "soDEMO",
+	"days": 1,
+	"OpenBrowser": true,
+	"QuitOnErrors": false,
+	"UserOnScreen": false, // Can I prompt the user for manual verification? On CICD, this should be false
+	// STEPS - START
+	"BeforeOrg_ValidateETCopyData": true,
+	"BeforeOrg_RunJestTests": true,
+	"BeforeOrg_BackupAlias": true, // In case you need to go back to the old org :-)
+	"CreateScratchOrg": true,
+	"BeforePush_PauseToCheckOrg": true,
+	"BeforePush_ShowDeployPage": true,
+	"BeforePush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed first
+	"BeforePush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"], // Some metadata may need to be manually configured
+	"BeforePush_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
+	"BeforePush_InstallPackages": [{ "id": "04tB0000000P1yA", "password": "abcd1234" }], // Install required packages before pushing (password is optional and it can be left out)
+	"PushMetadata": true,
+	"AfterPush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed after the push
+	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
+	"AfterPush_ExecuteApex": ["@ELTOROIT/scripts/apex/SetUserRecord.apex"],
+	"AfterPush_AssignPermissionSets": ["psTest"],
+	"AfterPush_DeployAdminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml",
+	"ETCopyData": "./@ELTOROIT/data",
+	"AfterData_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
+	"AfterData_RunApexTests": true,
+	"AfterData_PublishCommunityName": "ABC",
+	"AfterData_GeneratePassword": true,
+	"CreateFinestDebugLevel": true,
+	"DeployToSandbox": { "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true },
+	// STEPS - END
+	"ShowFinalSuccess": true
+}
+
+// ExecuteApex: ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"],

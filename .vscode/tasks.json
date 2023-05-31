@@ -5,7 +5,8 @@
 	"tasks": [{
 		"label": "ELTOROIT PushWhenBuild",
 		"type": "shell",
-		"command": "sfdx force:source:push --json",
+		// "command": "sfdx force:source:push --json --forceoverwrite && date",
+		"command": "./build.sh",
 		"group": {
 			"kind": "build",
 			"isDefault": true

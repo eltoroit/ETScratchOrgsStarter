@@ -38,13 +38,11 @@ jobs:
                   sfdx plugins:link
             # sf org display --target-org <ORG_ALIAS> --verbose --json
             # https://github.com/eltoroit/<REPO>/settings/secrets/actions/new
-            - name: Export token
-              run: |
-                  echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
-                  ls -la
             - name: Register DevHub
               run: |
-                  ls -la
+                  ls -la etLogs
+                  echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
+                  ls -la etLogs
                   sf org login sfdx-url --sfdx-url-file "etLogs/token.txt" --set-default-dev-hub --alias DevHub
             # Create scratch org
             - name: Create Scratch Org

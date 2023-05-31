@@ -24,8 +24,8 @@ jobs:
                   tar xJf sfdx-linux-x64.tar.xz -C ./sfdx-cli --strip-components 1
                   export PATH=./sfdx-cli/bin:$PATH
                   echo $PATH
-                  sfdx update > etLogs/sfdx_update
-                  sfdx force:lightning:lwc:test:setup > etLogs/sfdx_lwcTestSetup
+                  sfdx update > etLogs/sfdx_update.out 2>etLogs/sfdx_update.err
+                  sfdx force:lightning:lwc:test:setup > etLogs/sfdx_lwcTestSetup.out 2>etLogs/sfdx_lwcTestSetup.err
                   sfdx --version
             - name: Install ETCopyData tools
               # run: echo 'y' | sfdx plugins:install etcopydata@beta

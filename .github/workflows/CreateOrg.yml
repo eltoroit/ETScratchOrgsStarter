@@ -13,6 +13,8 @@ jobs:
                   node-version: 16
             - name: Show Node.js version
               run: node -v
+            - name: Create etLogs folder
+              run: mkdir -p etLogs
             - name: Export token
               run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Install Salesforce tools

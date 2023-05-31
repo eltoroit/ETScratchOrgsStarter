@@ -21,7 +21,7 @@ jobs:
               run: |
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q
                   mkdir sfdx-cli
-                  tar xJf sfdx-linux-amd64.tar.xz -C sfdx-cli --strip-components 1
+                  tar xJf sfdx-linux-x64.tar.xz -C sfdx-cli --strip-components 1
                   ./sfdx-cli/install
                   sfdx update
                   sfdx force:lightning:lwc:test:setup

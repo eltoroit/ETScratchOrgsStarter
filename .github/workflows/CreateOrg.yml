@@ -15,8 +15,6 @@ jobs:
               run: node -v
             - name: Create etLogs folder
               run: mkdir -p etLogs
-            - name: Export token
-              run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Install Salesforce tools
               run: |
                   echo "PWD" && pwd
@@ -37,11 +35,15 @@ jobs:
                   cd ETCopyData
                   npm install
                   sfdx plugins:link
+            # sf org display --target-org <ORG_ALIAS> --verbose --json
+            # https://github.com/eltoroit/<REPO>/settings/secrets/actions/new
+            - name: Export token
+              run: echo ${{secrets.DEVHUB_TOKEN}} > etLogs/token.txt
             - name: Register DevHub
               run: |
                   echo "PWD" && pwd
                   cat "etLogs/token.txt"
-                  sfdx force:auth:sfdxurl:store -f "etLogs/token.txt" --setalias DevHub --setdefaultdevhubusername
+                  sf org login sfdx-url --sfdx-url-file "etLogs/token.txt" --set-default-dev-hub --alias DevHub
             # Create scratch org
             - name: Create Scratch Org
               run: node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs

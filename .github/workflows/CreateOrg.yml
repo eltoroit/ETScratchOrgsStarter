@@ -20,9 +20,9 @@ jobs:
             - name: Install Salesforce tools
               run: |
                   wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz -q
-                  mkdir ~sfdx-cli
-                  tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx-cli --strip-components 1
-                  export PATH=~/sfdx-cli/bin:$PATH
+                  mkdir sfdx-cli
+                  tar xJf sfdx-linux-x64.tar.xz -C ./sfdx-cli --strip-components 1
+                  export PATH=./sfdx-cli/bin:$PATH
                   sfdx update
                   sfdx force:lightning:lwc:test:setup
             - name: Install ETCopyData tools

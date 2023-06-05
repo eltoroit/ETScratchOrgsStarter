@@ -7,11 +7,10 @@ import { parse } from 'jsonc-parser';
 const config = {
 	debugMessages: false, // FALSE: To skip additional messages
 	//
-	// Possible values are
-	// {code:0}	if you want all of the steps to succeed
-	// {code:1}	if you want all of the steps to  fail
-	// undefined	if you want to actually execute the SFDX steps
-	isDebugSkipSFDX: { code: 0 },
+	// Possible values for [isDebugSkipSFDX] are
+	// {code:0}		if you want all of the steps to succeed
+	// {code:1}		if you want all of the steps to fail
+	// isDebugSkipSFDX: { code: 0 }, // Comment this line if you do want to execute the actual commands
 	steps: [],
 	errors: [],
 	commands: [],

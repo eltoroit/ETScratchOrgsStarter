@@ -36,7 +36,6 @@ export default class SFDX {
 				debugger;
 			}
 			if (config.settings.QuitOnErrors) {
-				Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
@@ -244,7 +243,7 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = `sfdx project deploy start --source-dir="${data}" --wait=30 --verbose --json`;
+		command = `sf project deploy start --source-dir="${data}" --wait=30 --verbose --json`;
 		logFile = `${stepNumber}_${stepMethod}.json`;
 		await this._runSFDX({ config, command, logFile });
 	}
@@ -261,7 +260,7 @@ export default class SFDX {
 		await this._runSFDX({ config, command, logFile });
 
 		if (config.settings.UserOnScreen) {
-			let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on every page?' });
+			let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on this page?' });
 			if (!result) {
 				throw new Error(`${config.currentStep} failed`);
 			}
@@ -301,7 +300,7 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = 'sfdx project deploy start --ignore-conflicts --wait=30 --json';
+		command = 'sf project deploy start --ignore-conflicts --wait=30 --json';
 		logFile = `${stepNumber}_${stepMethod}.json`;
 		await this._runSFDX({ config, command, logFile });
 	}
@@ -325,7 +324,7 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = `sfdx project deploy start --source-dir="${data}" --ignore-conflicts --wait=30 --verbose --json`;
+		command = `sf project deploy start --source-dir="${data}" --ignore-conflicts --wait=30 --verbose --json`;
 		logFile = `${stepNumber}_${stepMethod}.json`;
 
 		// Move .forceignore (hide it)
@@ -447,7 +446,7 @@ export default class SFDX {
 			config.stepNumber++;
 			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
 			config.currentStep = `${stepNumber}. ${stepMethod} (Perform Deployment)`;
-			command = `sfdx project deploy start --source-dir="${data.folder}" --target-org="${data.alias}" --verbose --wait=30 --json`;
+			command = `sf project deploy start --source-dir="${data.folder}" --target-org="${data.alias}" --verbose --wait=30 --json`;
 			logFile = `${stepNumber}_${stepMethod}.json`;
 			await this._runSFDX({ config, command, logFile });
 		};

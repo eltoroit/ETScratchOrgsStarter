@@ -8,9 +8,9 @@ const config = {
 	debugMessages: false, // FALSE: To skip additional messages
 	//
 	// Possible values are
-	//	{code:0}	if you want all of the steps to succeed
-	//	{code:1}	if you want all of the steps to  fail
-	//	undefined	if you want to actually execute the SFDX steps
+	// {code:0}	if you want all of the steps to succeed
+	// {code:1}	if you want all of the steps to  fail
+	// undefined	if you want to actually execute the SFDX steps
 	isDebugSkipSFDX: { code: 0 },
 	steps: [],
 	errors: [],

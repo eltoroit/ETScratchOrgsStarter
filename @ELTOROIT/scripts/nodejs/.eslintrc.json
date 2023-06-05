@@ -12,7 +12,7 @@
 	"rules": {
 		"semi": ["error", "always"],
 		"quotes": ["error", "single"],
-		"indent": ["error", "tab"],
+		"indent": ["error", "tab", { "SwitchCase": 1 }],
 		"no-console": "error",
 		"no-debugger": "off",
 		"no-alert": "error"

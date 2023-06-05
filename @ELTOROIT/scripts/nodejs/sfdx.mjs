@@ -3,11 +3,38 @@ import Colors2 from './colors.mjs';
 import OS2 from './lowLevelOs.mjs';
 import ET_Asserts from './etAsserts.mjs';
 
+class MyException extends Error {
+	data;
+	constructor({ message, data }) {
+		super(message);
+		this.data = data;
+	}
+}
+
+const resultSkipSFDX = ({ config, stepName }) => {
+	let output = null;
+	switch (stepName) {
+		case 'ValidateETCopyData': {
+			output = 'etcopydata - debug';
+			break;
+		}
+		case 'BackupAlias': {
+			output = JSON.stringify({ result: [{ alias: config.settings.alias }] });
+			break;
+		}
+	}
+	return output;
+};
+
 export default class SFDX {
 	async processSteps({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
-		const reportError = () => {
+		const reportError = (ex) => {
+			Logs2.reportErrorMessage({ config, msg: `${ex.message}` });
+			if (ex.message !== `${config.currentStep} failed`) {
+				debugger;
+			}
 			if (config.settings.QuitOnErrors) {
 				Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
 				Logs2.reportErrorMessage({ config, msg: '' });
@@ -25,11 +52,12 @@ export default class SFDX {
 			config.stepNumber++;
 			if (typeof step === 'string') {
 				config.step = step;
+				config.stepName = step;
 				if (this[step]) {
 					try {
 						await this[step]({ config });
 					} catch (ex) {
-						reportError();
+						reportError(ex);
 					}
 				} else {
 					Logs2.reportErrorMessage({ config, msg: `${config.stepNumber}: ${step}` });
@@ -37,10 +65,8 @@ export default class SFDX {
 					debugger;
 				}
 			} else {
-				config.step = JSON.stringify(step);
-				const keys = Object.keys(step);
-
 				// Validate entry
+				const keys = Object.keys(step);
 				let message = `Step #${config.stepNumber} ${JSON.stringify(keys)} should have one and only one key`;
 				try {
 					ET_Asserts.equals({ expected: 1, actual: keys.length, message });
@@ -48,14 +74,17 @@ export default class SFDX {
 					Logs2.reportErrorMessage({ config, msg: message });
 					process.exit(-4);
 				}
-
 				const key = keys[0];
 				const data = step[key];
+
+				config.step = JSON.stringify(step);
+				config.stepName = key;
+
 				if (this[key]) {
 					try {
 						await this[key]({ config, data });
 					} catch (ex) {
-						reportError();
+						reportError(ex);
 					}
 				} else {
 					Logs2.reportErrorMessage({ config, msg: `${config.stepNumber}: ${keys[0]}` });
@@ -85,9 +114,9 @@ export default class SFDX {
 		let plugins = result.STDOUT.split('\n');
 		let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
 		if (etcd.length !== 1) {
-			let msg = 'Could not find plugin for ETCopyData installed';
-			Logs2.reportErrorMessage({ config, msg });
-			throw new Error(msg);
+			let error = 'Could not find plugin for ETCopyData installed';
+			Logs2.reportErrorMessage({ config, msg: error });
+			throw new MyException({ message: `${config.currentStep} failed`, data: error });
 			// process.exit(-5);
 		} else {
 			Colors2.sfdxShowNote({ msg: etcd[0] });
@@ -110,18 +139,20 @@ export default class SFDX {
 		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		config.currentStep = `${stepNumber}a. ${stepMethod} (Find orgs)`;
+		config.currentStep = `${stepNumber}. ${stepMethod} (Find orgs)`;
 		command = 'sf alias list --json';
-		logFile = `${stepNumber}a_${stepMethod}.json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
 		let result = await this._runSFDX({ config, command, logFile });
 
 		// Process results
 		let orgs = JSON.parse(result.STDOUT).result;
 		let org = orgs.find((org) => org.alias === config.settings.alias);
 		if (org) {
-			config.currentStep = `${stepNumber}b. ${stepMethod} (Create backup alias)`;
+			config.stepNumber++;
+			const { stepNumber, stepMethod } = this.getStepId({ config });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Create backup alias)`;
 			command = `sf alias set ${config.settings.alias}.${new Date().toJSON().replaceAll('-', '').replaceAll(':', '').split('.')[0].slice(0, 13)}="${org.value}" --json`;
-			logFile = `${stepNumber}b_${stepMethod}.json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
 			await this._runSFDX({ config, command, logFile });
 		}
 	}
@@ -130,16 +161,25 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const { stepNumber, stepMethod } = this.getStepId({ config });
-		config.currentStep = `${stepNumber}a. ${stepMethod} (Create new org)`;
-		command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.settings.alias}" --duration-days="${config.settings.days}" --json`;
-		logFile = `${stepNumber}a_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		const createNewOrg = async () => {
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Create new org)`;
+			command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.settings.alias}" --duration-days="${config.settings.days}" --json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		};
 
-		config.currentStep = `${stepNumber}b. ${stepMethod} (Set as default)`;
-		command = `sf config set target-org="${config.settings.alias}" --json`;
-		logFile = `${stepNumber}b_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		const setAsDefault = async () => {
+			config.stepNumber++;
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Set as default)`;
+			command = `sf config set target-org="${config.settings.alias}" --json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		};
+
+		await createNewOrg();
+		await setAsDefault();
 	}
 
 	async CreateFinestDebugLevel({ config }) {
@@ -197,32 +237,29 @@ export default class SFDX {
 		await this._runSFDX({ config, command, logFile });
 	}
 
-	async PrepareOrg({ config, data }) {
+	async DeployMetadata({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		await this._runSFDXArray({
-			config,
-			data,
-			stepNumber,
-			stepMethod,
-			commandMaker: ({ stepData }) => `sfdx project deploy start --source-dir="${stepData}" --wait=30 --verbose --json`,
-		});
+		config.currentStep = `${stepNumber}. ${stepMethod}`;
+		command = `sfdx project deploy start --source-dir="${data}" --wait=30 --verbose --json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
 	}
 
 	async ManualMetadata({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		await this._runSFDXArray({
-			config,
-			data,
-			stepNumber,
-			stepMethod,
-			commandMaker: ({ stepData }) => `sf org open --path="${stepData}" --json`,
-		});
+		config.currentStep = `${stepNumber}. ${stepMethod}`;
+		command = `sf org open --path="${data}" --json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
+
 		if (config.settings.UserOnScreen) {
 			let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on every page?' });
 			if (!result) {
@@ -236,32 +273,26 @@ export default class SFDX {
 	async ExecuteApex({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		await this._runSFDXArray({
-			config,
-			data,
-			stepNumber,
-			stepMethod,
-			commandMaker: ({ stepData }) => `sf apex run -f "${stepData}" --json`,
-		});
+		config.currentStep = `${stepNumber}. ${stepMethod}`;
+		command = `sf apex run -f "${data}" --json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
 	}
 
 	async InstallPackage({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		let logFile, command;
 
+		const key = data.key ? ` --installation-key="${data.key}" ` : '';
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		await this._runSFDXArray({
-			config,
-			data,
-			stepNumber,
-			stepMethod,
-			commandMaker: ({ stepData }) => {
-				const key = stepData.key ? ` --installation-key="${stepData.key}" ` : '';
-				return `sf package install --apex-compile=all --package "${stepData.id}" ${key} --wait=30 --no-prompt --json`;
-			},
-		});
+		config.currentStep = `${stepNumber}. ${stepMethod}`;
+		command = `sf package install --apex-compile=all --package "${data.id}" ${key} --wait=30 --no-prompt --json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
 	}
 
 	async PushMetadata({ config }) {
@@ -278,15 +309,13 @@ export default class SFDX {
 	async AssignPermissionSet({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		await this._runSFDXArray({
-			config,
-			data,
-			stepNumber,
-			stepMethod,
-			commandMaker: ({ stepData }) => `sf force user permset assign --perm-set-name="${stepData}" --json`,
-		});
+		config.currentStep = `${stepNumber}. ${stepMethod}`;
+		command = `sf force user permset assign --perm-set-name="${data}" --json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
 	}
 
 	async DeployAdminProfile({ config, data }) {
@@ -324,7 +353,7 @@ export default class SFDX {
 		}
 
 		if (errors.length > 0) {
-			throw errors;
+			throw new MyException(`${config.currentStep} failed`, errors);
 		}
 	}
 
@@ -357,46 +386,48 @@ export default class SFDX {
 	async PublishCommunity({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
-		await this._runSFDXArray({
-			config,
-			data,
-			stepNumber,
-			stepMethod,
-			commandMaker: ({ stepData }) => `sf community publish --name "${stepData}" --json`,
-		});
+		config.currentStep = `${stepNumber}. ${stepMethod}`;
+		command = `sf community publish --name "${data}" --json`;
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
 	}
 
 	async GeneratePassword({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
-		let logFile,
-			command,
-			tmpCommand = {};
+		let logFile, command;
 
-		// Create password
-		const { stepNumber, stepMethod } = this.getStepId({ config });
-		config.currentStep = `${stepNumber}a. ${stepMethod} (Create)`;
-		command = 'sf force user password generate --json';
-		logFile = `${stepNumber}a_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		const createPassword = async () => {
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Create)`;
+			command = 'sf force user password generate --json';
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		};
+		const displayPassword = async () => {
+			config.stepNumber++;
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Display)`;
+			command = 'sf org display user --json';
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			let result = await this._runSFDX({ config, command, logFile });
+			if (result.CLOSE.code === 0) {
+				let stdOut = JSON.parse(result.STDOUT);
+				let user = stdOut.result;
+				let warnings = stdOut.warnings.filter((warning) => warning.includes('sensitive information'))[0];
+				let url = `${user.instanceUrl}/secur/frontdoor.jsp?sid=${user.accessToken}`;
+				let obj = { command, url, user, warnings };
+				let data = Colors2.getPrettyJson({ obj });
+				let path = `${config.rootLogs}/_user.json`;
+				await OS2.writeFile({ config, path, data });
+				Colors2.sfdxShowNote({ msg: `User credentials are saved in this file: ${path}` });
+			}
+		};
 
-		// Display password
-		config.currentStep = `${stepNumber}b. ${stepMethod} (Display)`;
-		command = 'sf org display user --json';
-		logFile = `${stepNumber}b_${stepMethod}.json`;
-		let result = await this._runSFDX({ config, command, logFile });
-		if (result.CLOSE.code === 0) {
-			let stdOut = JSON.parse(result.STDOUT);
-			let user = stdOut.result;
-			let warnings = stdOut.warnings.filter((warning) => warning.includes('sensitive information'))[0];
-			let url = `${user.instanceUrl}/secur/frontdoor.jsp?sid=${user.accessToken}`;
-			let obj = { command: tmpCommand, url, user, warnings };
-			let data = Colors2.getPrettyJson({ obj });
-			let path = `${config.rootLogs}/_user.json`;
-			await OS2.writeFile({ config, path, data });
-			Colors2.sfdxShowNote({ msg: `User credentials are saved in this file: ${path}` });
-		}
+		await createPassword();
+		await displayPassword();
 	}
 
 	async DeployToSandbox({ config, data }) {
@@ -404,25 +435,35 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: data, message: 'data' });
 		let logFile, command;
 
-		const { stepNumber, stepMethod } = this.getStepId({ config });
+		const openDeployPage = async () => {
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Open Deploy page)`;
+			command = `sf org open --target-org="${data.alias}" --path=${config.deployPage} --json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		};
 
-		// Open Deploy page
-		config.currentStep = `${stepNumber}a. ${stepMethod} (Open Deploy page)`;
-		command = `sf org open --target-org="${data.alias}" --path=${config.deployPage} --json`;
-		logFile = `${stepNumber}a_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		const performDeployment = async () => {
+			config.stepNumber++;
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Perform Deployment)`;
+			command = `sfdx project deploy start --source-dir="${data.folder}" --target-org="${data.alias}" --verbose --wait=30 --json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		};
 
-		// Perform Deployment
-		config.currentStep = `${stepNumber}b. ${stepMethod} (Perform Deployment)`;
-		command = `sfdx project deploy start --source-dir="${data.folder}" --target-org="${data.alias}" --verbose --wait=30 --json`;
-		logFile = `${stepNumber}b_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		const runTests = async () => {
+			config.stepNumber++;
+			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
+			config.currentStep = `${stepNumber}. ${stepMethod} (Run tests)`;
+			command = `sf apex run test --code-coverage --json --result-format=json --wait=60 --target-org="${data.alias}" --json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		};
 
-		// Run tests
-		config.currentStep = `${stepNumber}c. ${stepMethod} (Run tests)`;
-		command = `sf apex run test --code-coverage --json --result-format=json --wait=60 --target-org="${data.alias}" --json`;
-		logFile = `${stepNumber}c_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		await openDeployPage();
+		await performDeployment();
+		await runTests();
 	}
 
 	async ShowFinalSuccess({ config }) {
@@ -469,12 +510,11 @@ export default class SFDX {
 	}
 	// #endregion STEPS
 
-	getStepId({ config }) {
+	getStepId({ config, offset = 0 }) {
 		const error = new Error();
 		const stack = error.stack.split('\n');
-		const from = stack.slice(2, 3)[0].trim();
+		const from = stack.slice(2 + offset, 3 + offset)[0].trim();
 		const fromMethod = from.split(' ')[1];
-
 		const message = 'Application Error: Caller method must be in SFDX class';
 		try {
 			ET_Asserts.equals({ expected: true, actual: fromMethod.startsWith('SFDX.'), message });
@@ -602,19 +642,25 @@ export default class SFDX {
 					cwd: '/Users/aperez/Git Projects/current/ScratchOrgNodeJS',
 					item: { code: config.isDebugSkipSFDX.code, signal: null },
 					response: {
-						STDERR: 'TESTING WITHOUT SFDX COMMANDS\n',
-						STDOUT: 'TESTING WITHOUT SFDX COMMANDS\n',
+						STDERR: JSON.stringify({ TESTING: 'WITHOUT SFDX COMMANDS' }),
+						STDOUT: JSON.stringify({ TESTING: 'WITHOUT SFDX COMMANDS' }),
 						CLOSE: { code: config.isDebugSkipSFDX.code, signal: null },
 					},
 				};
 				result = {
 					STDERR: null,
-					STDOUT: {
-						code: 0,
+					STDOUT: JSON.stringify({
+						code: config.isDebugSkipSFDX.code,
+						result: [],
 						warnings: [],
-					},
-					CLOSE: { code: 0, signal: null },
+					}),
+					CLOSE: { code: config.isDebugSkipSFDX.code, signal: null },
 				};
+
+				const fakeResult = resultSkipSFDX({ config, stepName: config.stepName });
+				if (fakeResult) {
+					result.STDOUT = fakeResult;
+				}
 			} else {
 				command = command.split(' ');
 				let app = command.shift();

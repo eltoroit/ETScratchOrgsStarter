@@ -1,35 +1,48 @@
 {
-	"alias": "soDEMO",
-	"days": 1,
-	"OpenBrowser": true,
-	"QuitOnErrors": false,
-	"UserOnScreen": false, // Can I prompt the user for manual verification? On CICD, this should be false
-	// STEPS - START
-	"BeforeOrg_ValidateETCopyData": true,
-	"BeforeOrg_RunJestTests": true,
-	"BeforeOrg_BackupAlias": true, // In case you need to go back to the old org :-)
-	"CreateScratchOrg": true,
-	"BeforePush_PauseToCheckOrg": true,
-	"BeforePush_ShowDeployPage": true,
-	"BeforePush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed first
-	"BeforePush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"], // Some metadata may need to be manually configured
-	"BeforePush_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
-	"BeforePush_InstallPackages": [{ "id": "04tB0000000P1yA", "password": "abcd1234" }], // Install required packages before pushing (password is optional and it can be left out)
-	"PushMetadata": true,
-	"AfterPush_PrepareOrg": ["./@ELTOROIT/metadata/API/"], // Some metadata may need to be deployed after the push
-	"AfterPush_ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"],
-	"AfterPush_ExecuteApex": ["@ELTOROIT/scripts/apex/SetUserRecord.apex"],
-	"AfterPush_AssignPermissionSets": ["psTest"],
-	"AfterPush_DeployAdminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml",
-	"ETCopyData": "./@ELTOROIT/data",
-	"AfterData_ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"],
-	"AfterData_RunApexTests": true,
-	"AfterData_PublishCommunityName": "ABC",
-	"AfterData_GeneratePassword": true,
-	"CreateFinestDebugLevel": true,
-	"DeployToSandbox": { "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true },
-	// STEPS - END
-	"ShowFinalSuccess": true
-}
+	"settings": {
+		"days": 1,
+		"alias": "soDEMO",
+		"OpenBrowser": true,
+		"QuitOnErrors": false,
+		"UserOnScreen": false // Can I prompt the user for manual verification? On CICD, this should be false
+	},
+	"steps": [
+		// Prepare environment
+		"ValidateETCopyData",
+		"RunJestTests",
+		"BackupAlias", // In case you need to go back to the old org :-)
 
-// ExecuteApex: ["@ELTOROIT/scripts/apex/testApex_Good.apex", "@ELTOROIT/scripts/apex/testApex_Syntax.apex", "@ELTOROIT/scripts/apex/testApex_Exception.apex"],
+		// Creating Scratch org
+		"CreateScratchOrg",
+		"CreateFinestDebugLevel",
+		"PauseToCheckOrg",
+		"ShowDeployPage",
+		{ "DeployMetadata": "./@ELTOROIT/metadata/API/" },
+		{ "ManualMetadata": "/lightning/setup/SalesforceMobileAppQuickStart/home" },
+		{ "ExecuteApex": "@ELTOROIT/scripts/apex/testApex_Good.apex" },
+		{ "InstallPackage": { "id": "04tB0000000P1yA", "key": "abcd1234" } },
+		{ "InstallPackage": { "id": "04tB0000000P1yA" } },
+
+		// Push metadata
+		"PushMetadata",
+		{ "DeployMetadata": "./@ELTOROIT/metadata/API/" },
+		{ "ManualMetadata": "/lightning/setup/SalesforceMobileAppQuickStart/home" },
+		{ "ExecuteApex": "@ELTOROIT/scripts/apex/SetUserRecord.apex" },
+		{ "AssignPermissionSet": "psTest" },
+		{ "DeployAdminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml" },
+
+		// Loading Data
+		{ "ETCopyData": "./@ELTOROIT/data" },
+		{ "ExecuteApex": "@ELTOROIT/scripts/apex/testApex_Good.apex" },
+		"RunApexTests",
+		{ "PublishCommunity": "ABC" },
+		"GeneratePassword",
+
+		// CICD
+		{ "DeployToSandbox": { "alias": "sbDEMO-1", "folder": "./force-apps/deploy", "runTests": true } },
+		{ "DeployToSandbox": { "alias": "sbDEMO-2", "folder": "./force-apps/deploy", "runTests": true } },
+
+		// Print results
+		"ShowFinalSuccess"
+	]
+}

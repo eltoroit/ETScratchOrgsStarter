@@ -17,7 +17,7 @@
       "type": "node",
       "request": "launch",
       "name": "Create scratch org",
-      "args": ["--inspect", "${workspaceFolder}/@ELTOROIT/scripts/nodejs/orgBuilder.mjs"],
+      "args": ["--inspect", "${workspaceFolder}/@ELTOROIT/scripts/nodejs/orgBuilder.mjs", "--config-file=@ELTOROIT/scripts/nodejs/orgBuilder.jsonc"],
       "runtimeExecutable": "node",
       "skipFiles": [
         "<node_internals>/**",

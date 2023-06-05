@@ -13,7 +13,7 @@ export default class Logs {
 		let error = { test: config.currentStep, msg, ...ex };
 		if (ex.message) error.message = ex.message;
 		if (ex.stack) error.stack = ex.stack;
-		if (config.debug) Colors2.debug({ msg: 'ERROR FOR: ' + Colors2.getPrettyJson({ obj: error }) });
+		if (config.debugMessages) Colors2.debug({ msg: 'ERROR FOR: ' + Colors2.getPrettyJson({ obj: error }) });
 		Colors2.sfdxShowError({ msg: Colors2.getPrettyJson({ obj: error }) });
 	}
 

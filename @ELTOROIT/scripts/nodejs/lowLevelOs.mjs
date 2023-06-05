@@ -45,7 +45,7 @@ export default class LowLevelOS {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: path, message: 'path' });
 
-		if (config.debug) Colors2.debug({ msg: 'Reading file: ' + path });
+		if (config.debugMessages) Colors2.debug({ msg: 'Reading file: ' + path });
 		const fileExists = await LowLevelOS.doesFileExist({ config, path });
 		if (fileExists) {
 			const fileContents = await fs.readFile(path, 'utf8');
@@ -64,7 +64,7 @@ export default class LowLevelOS {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: path, message: 'path' });
 
-		if (config.debug) Colors2.debug({ msg: 'Recreating folder: ' + path });
+		if (config.debugMessages) Colors2.debug({ msg: 'Recreating folder: ' + path });
 		await fsExtra.remove(path);
 		await fsExtra.ensureDir(path);
 	}
@@ -74,7 +74,7 @@ export default class LowLevelOS {
 		ET_Asserts.hasData({ value: path, message: 'path' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
 
-		if (config.debug) Colors2.debug({ msg: Colors2.getPrettyJson({ obj: { msg: 'Writing file: ' + path, data } }) });
+		if (config.debugMessages) Colors2.debug({ msg: Colors2.getPrettyJson({ obj: { msg: 'Writing file: ' + path, data } }) });
 		try {
 			await fs.writeFile(path, data);
 		} catch (ex) {
@@ -88,7 +88,7 @@ export default class LowLevelOS {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: path, message: 'path' });
 
-		if (config.debug) Colors2.debug({ msg: 'Validating full path: ' + path });
+		if (config.debugMessages) Colors2.debug({ msg: 'Validating full path: ' + path });
 		try {
 			await fs.stat(path);
 			return true;
@@ -108,7 +108,7 @@ export default class LowLevelOS {
 		// Can't do async/await because it has events
 		return new Promise((resolve, reject) => {
 			let currentStep = config.currentStep;
-			if (config.debug) Colors2.debug({ msg: 'EXECUTING (Async): ' + Colors2.getPrettyJson({ obj: { app, args, cwd } }) });
+			if (config.debugMessages) Colors2.debug({ msg: 'EXECUTING (Async): ' + Colors2.getPrettyJson({ obj: { app, args, cwd } }) });
 
 			let response = {};
 
@@ -144,7 +144,7 @@ export default class LowLevelOS {
 
 				// Notify
 				let notification = { currentStep, eventName, app, args, cwd, item, response, forceResolve };
-				if (config.debug) Colors2.debug({ msg: `${notification.currentStep} | ${notification.item.trim()}` });
+				if (config.debugMessages) Colors2.debug({ msg: `${notification.currentStep} | ${notification.item.trim()}` });
 				callbackAreWeDone(notification);
 			};
 
@@ -167,7 +167,7 @@ export default class LowLevelOS {
 
 			const execProcess = spawn(app, args, { detach: true, shell: true, cwd });
 			execProcess.on('spawn', (...data) => {
-				if (config.debug) {
+				if (config.debugMessages) {
 					report({ eventName: 'SPAWN', data });
 				}
 			});

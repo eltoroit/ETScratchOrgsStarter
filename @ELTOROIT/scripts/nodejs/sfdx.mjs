@@ -7,173 +7,212 @@ export default class SFDX {
 	async processSteps({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
+		const reportError = () => {
+			Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
+			if (config.settings.QuitOnErrors) {
+				Logs2.reportErrorMessage({ config, msg: '' });
+				Logs2.reportErrorMessage({ config, msg: '' });
+				Logs2.reportErrorMessage({ config, msg: '' });
+				Logs2.reportErrorMessage({ config, msg: 'QuitOnErrors is set to true, aborting process!' });
+				Logs2.reportErrorMessage({ config, msg: '' });
+				Logs2.reportErrorMessage({ config, msg: '' });
+				Logs2.reportErrorMessage({ config, msg: '' });
+				process.exit(-1);
+			}
+		};
+
 		for (const step of config.steps) {
-			if (this[step]) {
-				try {
-					await this[step]({ config });
-				} catch (ex) {
-					Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
-					if (config.SFDX.QuitOnErrors) {
-						Logs2.reportErrorMessage({ config, msg: '' });
-						Logs2.reportErrorMessage({ config, msg: '' });
-						Logs2.reportErrorMessage({ config, msg: '' });
-						Logs2.reportErrorMessage({ config, msg: 'QuitOnErrors is set to true, aborting process!' });
-						Logs2.reportErrorMessage({ config, msg: '' });
-						Logs2.reportErrorMessage({ config, msg: '' });
-						Logs2.reportErrorMessage({ config, msg: '' });
-						process.exit(-1);
+			config.stepNumber++;
+			if (typeof step === 'string') {
+				console.log(`${config.stepNumber}: ${step}`);
+				if (this[step]) {
+					try {
+						await this[step]({ config });
+					} catch (ex) {
+						reportError();
 					}
+				} else {
+					console.log(`*** *** *** *** NOT IMPLEMENTED: ${step}`);
 				}
 			} else {
-				console.log(`*** *** *** *** NOT IMPLEMENTED: ${step}`);
+				const keys = Object.keys(step);
+
+				// Validate entry
+				console.log(`${config.stepNumber}: ${keys[0]}`);
+				let message = `Step #${config.stepNumber} ${JSON.stringify(keys)} should have one and only one key`;
+				try {
+					ET_Asserts.equals({ expected: 1, actual: keys.length, message });
+				} catch (ex) {
+					Logs2.reportErrorMessage({ config, msg: message });
+					process.exit(-1);
+				}
+
+				const key = keys[0];
+				const stepValue = step[key];
+				if (this[key]) {
+					try {
+						await this[key]({ config, stepValue });
+					} catch (ex) {
+						reportError();
+					}
+				} else {
+					console.log(`*** *** *** *** NOT IMPLEMENTED: ${step}`);
+				}
 			}
 		}
 	}
 
 	//#region STEPS
-	/* 01. Validate ETCopyData */
-	async BeforeOrg_ValidateETCopyData({ config }) {
+	async ValidateETCopyData({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '01';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}. Validate ETCopyData`;
 		command = 'sfdx plugins';
-		logFile = `${stepNumber}_BeforeOrg_ValidateETCopyData.json`;
-		let result = await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_ValidateETCopyData, config, command, logFile });
+		logFile = `${stepNumber}_ValidateETCopyData.json`;
+		let result = await this._runSFDX({ config, command, logFile });
+
 		// Process results
-		if (config.SFDX.BeforeOrg_ValidateETCopyData) {
-			let plugins = result.STDOUT.split('\n');
-			let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
-			if (etcd.length !== 1) {
-				let msg = 'Could not find plugin for ETCopyData installed';
-				Logs2.reportErrorMessage({ config, msg });
-				if (config.SFDX.ETCopyData) {
-					process.exit(-1);
-				}
-				throw new Error(msg);
-			} else {
-				Colors2.sfdxShowNote({ msg: etcd[0] });
-			}
+		let plugins = result.STDOUT.split('\n');
+		let etcd = plugins.filter((plugin) => plugin.startsWith('etcopydata'));
+		if (etcd.length !== 1) {
+			let msg = 'Could not find plugin for ETCopyData installed';
+			Logs2.reportErrorMessage({ config, msg });
+			// throw new Error(msg);
+			process.exit(-1);
+		} else {
+			Colors2.sfdxShowNote({ msg: etcd[0] });
 		}
 	}
 
-	/* 02. Run JEST tests */
-	async BeforeOrg_RunJestTests({ config }) {
+	async RunJestTests({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '02';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}. Run JEST tests`;
 		command = 'node node_modules/@salesforce/sfdx-lwc-jest/bin/sfdx-lwc-jest';
-		logFile = `${stepNumber}_BeforeOrg_RunJestTests.json`;
-		await this._runAndLog({ isGoingToRun: config.SFDX.BeforeOrg_RunJestTests, config, command, logFile });
+		logFile = `${stepNumber}_RunJestTests.json`;
+		await this._runAndLog({ config, command, logFile });
 	}
 
-	/* 03. Backup current org alias */
-	async BeforeOrg_BackupAlias({ config }) {
+	async BackupAlias({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '03';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}a. Backup current org alias (Find orgs)`;
 		command = 'sf alias list --json';
-		logFile = `${stepNumber}a_BeforeOrg_BackupAlias.json`;
-		let result = await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
+		logFile = `${stepNumber}a_BackupAlias.json`;
+		let result = await this._runSFDX({ config, command, logFile });
+
 		// Process results
-		if (config.SFDX.BeforeOrg_BackupAlias) {
-			let orgs = JSON.parse(result.STDOUT).result;
-			let org = orgs.find((org) => org.alias === config.SFDX.alias);
-			if (org) {
-				config.currentStep = `${stepNumber}b. Backup current org alias (Create backup alias)`;
-				command = `sf alias set ${config.SFDX.alias}.${new Date().toJSON().replaceAll('-', '').replaceAll(':', '').split('.')[0].slice(0, 13)}="${org.value}" --json`;
-				logFile = `${stepNumber}b_BeforeOrg_BackupAlias.json`;
-				await this._runSFDX({ isGoingToRun: config.SFDX.BeforeOrg_BackupAlias, config, command, logFile });
-			}
+		let orgs = JSON.parse(result.STDOUT).result;
+		let org = orgs.find((org) => org.alias === config.settings.alias);
+		if (org) {
+			config.currentStep = `${stepNumber}b. Backup current org alias (Create backup alias)`;
+			command = `sf alias set ${config.settings.alias}.${new Date().toJSON().replaceAll('-', '').replaceAll(':', '').split('.')[0].slice(0, 13)}="${org.value}" --json`;
+			logFile = `${stepNumber}b_BackupAlias.json`;
+			await this._runSFDX({ config, command, logFile });
 		}
 	}
 
-	/* 04. Create scratch org */
 	async CreateScratchOrg({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '04';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}a. Create scratch org (Create new org)`;
-		command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.SFDX.alias}" --duration-days="${config.SFDX.days}" --json`;
+		command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.settings.alias}" --duration-days="${config.settings.days}" --json`;
 		logFile = `${stepNumber}a_CreateScratchOrg.json`;
-		await this._runSFDX({ isGoingToRun: config.SFDX.CreateScratchOrg, config, command, logFile });
+		await this._runSFDX({ config, command, logFile });
 
-		if (config.SFDX.CreateScratchOrg) {
-			config.currentStep = `${stepNumber}b. Create scratch org (Set as default)`;
-			command = `sf config set target-org="${config.SFDX.alias}" --json`;
-			logFile = `${stepNumber}b_CreateScratchOrg.json`;
-			await this._runSFDX({ isGoingToRun: config.SFDX.CreateScratchOrg, config, command, logFile });
-		}
+		config.currentStep = `${stepNumber}b. Create scratch org (Set as default)`;
+		command = `sf config set target-org="${config.settings.alias}" --json`;
+		logFile = `${stepNumber}b_CreateScratchOrg.json`;
+		await this._runSFDX({ config, command, logFile });
 	}
 
-	/* 05. Pause to check org */
-	async BeforePush_PauseToCheckOrg({ config }) {
-		debugger;
+	async CreateFinestDebugLevel({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '05';
+		let values = '';
+		values += 'DeveloperName=FINEST ';
+		values += 'MasterLabel=FINEST ';
+		values += 'Database=FINEST ';
+		values += 'Callout=FINEST ';
+		values += 'ApexCode=FINEST ';
+		values += 'Validation=FINEST ';
+		values += 'Workflow=FINEST ';
+		values += 'ApexProfiling=FINEST ';
+		values += 'Visualforce=FINEST ';
+		values += 'System=FINEST ';
+		values += 'Wave=FINEST ';
+		values += 'Nba=FINEST ';
+
+		const stepNumber = this.getStepNumber({ config });
+		config.currentStep = `${stepNumber}. Create Finest DebugLevel`;
+		command = `sf data create record --use-tooling-api --sobject=DebugLevel --values="${values}" --json`;
+		logFile = `${stepNumber}_CreateFinestDebugLevel.json`;
+		await this._runSFDX({ config, command, logFile });
+	}
+
+	async PauseToCheckOrg({ config }) {
+		ET_Asserts.hasData({ value: config, message: 'config' });
+		let logFile, command;
+
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}. Pause to check org`;
 		command = 'sf org open --json';
-		logFile = `${stepNumber}_BeforePush_PauseToCheckOrg.json`;
-		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_PauseToCheckOrg, config, command, logFile });
-		if (config.SFDX.BeforePush_PauseToCheckOrg) {
-			if (config.SFDX.UserOnScreen) {
-				let result = await Logs2.promptYesNo({ config, question: 'Was the org created succesfully?' });
-				if (!result) {
-					throw new Error(`${config.currentStep} failed`);
-				}
-			} else {
-				this._skipBecauseCICD({ config });
+		logFile = `${stepNumber}_PauseToCheckOrg.json`;
+		await this._runSFDX({ config, command, logFile });
+		if (config.settings.UserOnScreen) {
+			let result = await Logs2.promptYesNo({ config, question: 'Was the org created succesfully?' });
+			if (!result) {
+				throw new Error(`${config.currentStep} failed`);
 			}
+		} else {
+			this._skipBecauseCICD({ config });
 		}
 	}
 
-	/* 06. Open deploy page to watch deployments */
-	async BeforePush_ShowDeployPage({ config }) {
+	async ShowDeployPage({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
 
-		const stepNumber = '06';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}. Open deploy page to watch deployments`;
 		command = `sf org open --path="${config.deployPage}" --json`;
 		logFile = `${stepNumber}_BeforePush_ShowDeployPage.json`;
-		await this._runSFDX({ isGoingToRun: config.SFDX.BeforePush_ShowDeployPage, config, command, logFile });
+		await this._runSFDX({ config, command, logFile });
 	}
 
-	/* 07. Prepare the org before push */
-	async BeforePush_PrepareOrg({ config }) {
+	async PrepareOrg({ config, stepValue }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
-		let logFileParts, commandParts, listValues, isGoingToRun;
+		let logFileParts, commandParts;
 
-		const stepNumber = '07';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}. Prepare the org before push`;
+
 		commandParts = {
 			pre: 'sfdx project deploy start --source-dir="',
 			post: '" --wait=30 --verbose --json',
 		};
 		logFileParts = {
 			step: stepNumber,
-			pre: 'BeforePush_PrepareOrg',
+			pre: 'PrepareOrg',
 			post: '.json',
 		};
-		listValues = config.SFDX.BeforePush_PrepareOrg;
-		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
-		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+		await this._runSFDXArray({ listValues: stepValue, config, commandParts, logFileParts });
 	}
 
-	/* 08. Open pages to manually configure org before push */
-	async BeforePush_ManualMetadata({ config }) {
+	async BeforePush_ManualMetadata({ config, stepValue }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
-		let logFileParts, commandParts, listValues, isGoingToRun;
+		let logFileParts, commandParts;
 
-		const stepNumber = '08';
+		const stepNumber = this.getStepNumber({ config });
 		config.currentStep = `${stepNumber}. Open pages to manually configure org before push`;
 		commandParts = {
 			pre: 'sf org open --path="',
@@ -181,12 +220,10 @@ export default class SFDX {
 		};
 		logFileParts = {
 			step: stepNumber,
-			pre: 'BeforePush_ManualMetadata',
+			pre: 'ManualMetadata',
 			post: '.json',
 		};
-		listValues = config.SFDX.BeforePush_ManualMetadata;
-		isGoingToRun = Array.isArray(listValues) && listValues?.length > 0;
-		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
+		await this._runSFDXArray({ listValues: stepValue, config, commandParts, logFileParts });
 		if (isGoingToRun) {
 			if (config.SFDX.UserOnScreen) {
 				let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on every page?' });
@@ -199,7 +236,10 @@ export default class SFDX {
 		}
 	}
 
-	/* 09. Execute Apex Anonymous code before push */
+	/*
+
+
+
 	async BeforePush_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -220,7 +260,6 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	/* 10. Install Packages before push */
 	async BeforePush_InstallPackages({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -257,7 +296,6 @@ export default class SFDX {
 		});
 	}
 
-	/* 11. Push metadata */
 	async PushMetadata({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -269,7 +307,6 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.PushMetadata, config, command, logFile });
 	}
 
-	/* 12. Prepare the org after push */
 	async AfterPush_PrepareOrg({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -290,7 +327,6 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	/* 13. Open pages to manually configure org after push */
 	async AfterPush_ManualMetadata({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -321,7 +357,6 @@ export default class SFDX {
 		}
 	}
 
-	/* 14. Execute Apex Anonymous code after push */
 	async AfterPush_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -342,7 +377,6 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	/* 15. Assign permission sets to your user */
 	async AfterPush_AssignPermissionSets({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -363,7 +397,6 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	/* 16. Deploy "Admin" standard profile */
 	async AfterPush_DeployAdminProfile({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -402,7 +435,6 @@ export default class SFDX {
 		}
 	}
 
-	/* 17. Load data using ETCopyData plugin */
 	async ETCopyData({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -417,7 +449,6 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.ETCopyData, config, command, logFile });
 	}
 
-	/* 18. Execute Apex Anonymous code after data load */
 	async AfterData_ExecuteApex({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFileParts, commandParts, listValues, isGoingToRun;
@@ -438,7 +469,6 @@ export default class SFDX {
 		await this._runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts });
 	}
 
-	/* 19. Run Apex tests */
 	async AfterData_RunApexTests({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -450,7 +480,6 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_RunApexTests, config, command, logFile });
 	}
 
-	/* 20. Publish community */
 	async AfterData_PublishCommunityName({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -462,7 +491,6 @@ export default class SFDX {
 		await this._runSFDX({ isGoingToRun: config.SFDX.AfterData_PublishCommunityName, config, command, logFile });
 	}
 
-	/* 21. Generate Password */
 	async AfterData_GeneratePassword({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile,
@@ -495,33 +523,6 @@ export default class SFDX {
 		}
 	}
 
-	/* 22. Create Finest DebugLevel */
-	async CreateFinestDebugLevel({ config }) {
-		ET_Asserts.hasData({ value: config, message: 'config' });
-		let logFile, command;
-
-		let values = '';
-		values += 'DeveloperName=FINEST ';
-		values += 'MasterLabel=FINEST ';
-		values += 'Database=FINEST ';
-		values += 'Callout=FINEST ';
-		values += 'ApexCode=FINEST ';
-		values += 'Validation=FINEST ';
-		values += 'Workflow=FINEST ';
-		values += 'ApexProfiling=FINEST ';
-		values += 'Visualforce=FINEST ';
-		values += 'System=FINEST ';
-		values += 'Wave=FINEST ';
-		values += 'Nba=FINEST ';
-
-		const stepNumber = '22';
-		config.currentStep = `${stepNumber}. Create Finest DebugLevel`;
-		command = `sf data create record --use-tooling-api --sobject=DebugLevel --values="${values}" --json`;
-		logFile = `${stepNumber}_CreateFinestDebugLevel.json`;
-		await this._runSFDX({ isGoingToRun: config.SFDX.CreateFinestDebugLevel, config, command, logFile });
-	}
-
-	/* 23. Deploy to sandbox */
 	async DeployToSandbox({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		let logFile, command;
@@ -548,7 +549,6 @@ export default class SFDX {
 		}
 	}
 
-	/* 99. ShowFinalSuccess */
 	async ShowFinalSuccess({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
@@ -590,68 +590,63 @@ export default class SFDX {
 			}
 		}
 	}
-	//#endregion STEPS
+	*/
+	// #endregion STEPS
 
-	async _runSFDXArray({ isGoingToRun, listValues, config, commandParts, logFileParts, commandMaker = null }) {
-		ET_Asserts.hasData({ value: isGoingToRun, message: 'isGoingToRun' });
+	getStepNumber({ config }) {
+		return `LIST_${config.stepNumber.toString().padStart(2, '0')}`;
+	}
+
+	async _runSFDXArray({ config, stepValue, stepMaker }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
-		ET_Asserts.hasData({ value: commandParts, message: 'commandParts' });
-		ET_Asserts.hasData({ value: commandParts.pre, message: 'commandParts.pre' });
-		ET_Asserts.hasData({ value: commandParts.post, message: 'commandParts.post' });
-		ET_Asserts.hasData({ value: logFileParts, message: 'logFileParts' });
-		ET_Asserts.hasData({ value: logFileParts.step, message: 'logFileParts.step' });
-		ET_Asserts.hasData({ value: logFileParts.pre, message: 'logFileParts.pre' });
-		ET_Asserts.hasData({ value: logFileParts.post, message: 'logFileParts.post' });
+		ET_Asserts.hasData({ value: stepValue, message: 'stepValue' });
+		ET_Asserts.hasData({ value: stepMaker, message: 'stepMaker' });
 		let logFile, command;
 
-		if (isGoingToRun) {
-			if (listValues.length > 0) {
-				let errors = [];
-				let tmpCurrentStep = config.currentStep.split(' ');
-				tmpCurrentStep.shift();
-				tmpCurrentStep = tmpCurrentStep.join(' ');
-				for (let idx = 0; idx < listValues.length; idx++) {
-					try {
-						let step = `${logFileParts.step}${String.fromCharCode('a'.charCodeAt(0) + idx)}`;
-						config.currentStep = `${step}. ${tmpCurrentStep} (multi-item)`;
-						command = commandMaker ? commandMaker(listValues[idx]) : `${commandParts.pre}${listValues[idx]}${commandParts.post}`;
-						logFile = `${step}_${logFileParts.pre}${logFileParts.post}`;
-						await this._runSFDX({ isGoingToRun, config, command, logFile });
-					} catch (ex) {
-						if (config.SFDX.QuitOnErrors) {
-							config.currentStep = tmpCurrentStep;
-							throw ex;
-						} else {
-							errors.push(ex);
-						}
+		if (stepValue.length > 0) {
+			let errors = [];
+			let tmpCurrentStep = config.currentStep.split(' ');
+			tmpCurrentStep.shift();
+			tmpCurrentStep = tmpCurrentStep.join(' ');
+			for (let idx = 0; idx < stepValue.length; idx++) {
+				try {
+					let step = `${logFileParts.step}${String.fromCharCode('a'.charCodeAt(0) + idx)}`;
+					config.currentStep = `${step}. ${tmpCurrentStep} (multi-item)`;
+					command = commandMaker ? commandMaker(listValues[idx]) : `${commandParts.pre}${listValues[idx]}${commandParts.post}`;
+					logFile = `${step}_${logFileParts.pre}${logFileParts.post}`;
+					await this._runSFDX({ config, command, logFile });
+				} catch (ex) {
+					if (config.settings.QuitOnErrors) {
+						config.currentStep = tmpCurrentStep;
+						throw ex;
+					} else {
+						errors.push(ex);
 					}
 				}
-				config.currentStep = tmpCurrentStep;
-				if (errors.length > 0) {
-					throw errors;
-				}
-			} else {
-				this._showStepSkipped({ config });
+			}
+			config.currentStep = tmpCurrentStep;
+			if (errors.length > 0) {
+				throw errors;
 			}
 		} else {
 			this._showStepSkipped({ config });
 		}
 	}
 
-	async _runSFDX({ isGoingToRun, config, command, logFile }) {
+	async _runSFDX({ config, command, logFile }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: command, message: 'command' });
 		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
 
-		if (command.startsWith('sf org open') && !config.SFDX.OpenBrowser) {
+		if (command.startsWith('sf org open') && !config.settings.OpenBrowser) {
 			Colors2.sfdxShowNote({ msg: 'Brwoser not was not open because flag [OpenBrowser] is not true' });
 			return {};
 		}
 
-		return await this._runAndLog({ isGoingToRun, config, command, logFile });
+		return await this._runAndLog({ config, command, logFile });
 	}
 
-	async _runAndLog({ isGoingToRun, config, command, logFile }) {
+	async _runAndLog({ config, command, logFile }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: command, message: 'command' });
 		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
@@ -695,11 +690,6 @@ export default class SFDX {
 			let path = `${config.rootLogs}/${logFile}`;
 			await OS2.writeFile({ config, path, data });
 		};
-
-		if (!isGoingToRun) {
-			this._showStepSkipped({ config });
-			return;
-		}
 
 		try {
 			start = new Date();

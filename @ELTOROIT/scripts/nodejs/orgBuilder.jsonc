@@ -17,10 +17,10 @@
 		// "CreateFinestDebugLevel",
 		// "PauseToCheckOrg",
 		// "ShowDeployPage",
-		{ "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed first
-		{ "ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"] }, // Some metadata may need to be manually configured
-		{ "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
-		{ "InstallPackages": [{ "id": "04tB0000000P1yA", "password": "abcd1234" }] }, // Install required packages before pushing (password is optional and it can be left out)
+		// { "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed first
+		// { "ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"] }, // Some metadata may need to be manually configured
+		// { "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
+		// { "InstallPackages": [{ "id": "04tB0000000P1yA", "key": "abcd1234" }, { "id": "04tB0000000P1yB" }] }, // Install required packages before pushing (password is optional and it can be left out)
 
 		// Push metadata
 		"PushMetadata",

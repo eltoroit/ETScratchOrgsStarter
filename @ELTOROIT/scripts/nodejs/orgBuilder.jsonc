@@ -17,28 +17,30 @@
 		"CreateFinestDebugLevel",
 		"PauseToCheckOrg",
 		"ShowDeployPage",
-		{ "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed first
+		{ "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed (not pushed))
 		{ "ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"] }, // Some metadata may need to be manually configured
 		{ "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
-		{ "InstallPackages": [{ "id": "04tB0000000P1yA", "key": "abcd1234" }, { "id": "04tB0000000P1yB" }] }, // Install required packages before pushing (password is optional and it can be left out)
+		{ "InstallPackage": [{ "id": "04tB0000000P1yA", "key": "abcd1234" }, { "id": "04tB0000000P1yB" }] }, // Install required packages before pushing (password is optional and it can be left out)
 
 		// Push metadata
 		"PushMetadata",
-		{ "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed after the push
+		{ "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed deployed (not pushed))
 		{ "ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"] },
 		{ "ExecuteApex": ["@ELTOROIT/scripts/apex/SetUserRecord.apex"] },
-		{ "AssignPermissionSets": ["psTest"] },
+		{ "AssignPermissionSet": ["psTest"] },
 		{ "DeployAdminProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml" },
 
 		// Loading Data
 		{ "ETCopyData": "./@ELTOROIT/data" },
 		{ "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
 		"RunApexTests",
-		{ "PublishCommunities": ["ABC"] },
+		{ "PublishCommunity": ["ABC"] },
 		"GeneratePassword",
 
 		// CICD
-		{ "DeployToSandbox": [{ "alias": "sbDEMO", "folder": "./force-apps/deploy", "runTests": true }] },
+		{ "DeployToSandbox": { "alias": "sbDEMO-1", "folder": "./force-apps/deploy", "runTests": true } },
+
+		// Print results
 		"ShowFinalSuccess"
 	]
 }

@@ -5,7 +5,13 @@ import Colors2 from './colors.mjs';
 import { parse } from 'jsonc-parser';
 
 const config = {
-	debug: false,
+	debugMessages: false, // FALSE: To skip additional messages
+	//
+	// Possible values are
+	//	{code:0}	if you want all of the steps to succeed
+	//	{code:1}	if you want all of the steps to  fail
+	//	undefined	if you want to actually execute the SFDX steps
+	isDebugSkipSFDX: { code: 0 },
 	steps: [],
 	errors: [],
 	commands: [],
@@ -28,7 +34,7 @@ export default class OrgBuilder {
 		await this._restartLogFolder();
 		await this.sfdx.processSteps({ config });
 		if (config.errors.length > 0) {
-			process.exit(-1);
+			process.exit(-2);
 		}
 	}
 

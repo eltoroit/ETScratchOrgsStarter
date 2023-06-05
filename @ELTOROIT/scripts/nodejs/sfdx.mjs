@@ -8,8 +8,8 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
 		const reportError = () => {
-			Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
 			if (config.settings.QuitOnErrors) {
+				Logs2.reportErrorMessage({ config, msg: `${config.currentStep} failed` });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
@@ -17,13 +17,14 @@ export default class SFDX {
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
-				process.exit(-1);
+				process.exit(-3);
 			}
 		};
 
 		for (const step of config.steps) {
 			config.stepNumber++;
 			if (typeof step === 'string') {
+				config.step = step;
 				if (this[step]) {
 					try {
 						await this[step]({ config });
@@ -36,6 +37,7 @@ export default class SFDX {
 					debugger;
 				}
 			} else {
+				config.step = JSON.stringify(step);
 				const keys = Object.keys(step);
 
 				// Validate entry
@@ -44,7 +46,7 @@ export default class SFDX {
 					ET_Asserts.equals({ expected: 1, actual: keys.length, message });
 				} catch (ex) {
 					Logs2.reportErrorMessage({ config, msg: message });
-					process.exit(-1);
+					process.exit(-4);
 				}
 
 				const key = keys[0];
@@ -64,7 +66,7 @@ export default class SFDX {
 		}
 
 		if (!config.ShowFinalSuccess) {
-			this.ShowFinalSuccess({ config });
+			await this.ShowFinalSuccess({ config });
 		}
 	}
 
@@ -86,7 +88,7 @@ export default class SFDX {
 			let msg = 'Could not find plugin for ETCopyData installed';
 			Logs2.reportErrorMessage({ config, msg });
 			throw new Error(msg);
-			// process.exit(-1);
+			// process.exit(-5);
 		} else {
 			Colors2.sfdxShowNote({ msg: etcd[0] });
 		}
@@ -117,7 +119,7 @@ export default class SFDX {
 		let orgs = JSON.parse(result.STDOUT).result;
 		let org = orgs.find((org) => org.alias === config.settings.alias);
 		if (org) {
-			config.currentStep = `${stepNumber}a. ${stepMethod} (Create backup alias)`;
+			config.currentStep = `${stepNumber}b. ${stepMethod} (Create backup alias)`;
 			command = `sf alias set ${config.settings.alias}.${new Date().toJSON().replaceAll('-', '').replaceAll(':', '').split('.')[0].slice(0, 13)}="${org.value}" --json`;
 			logFile = `${stepNumber}b_${stepMethod}.json`;
 			await this._runSFDX({ config, command, logFile });
@@ -172,17 +174,14 @@ export default class SFDX {
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
 		command = 'sf org open --json';
+		logFile = `${stepNumber}_${stepMethod}.json`;
+		await this._runSFDX({ config, command, logFile });
 		if (config.settings.UserOnScreen) {
-			logFile = `${stepNumber}_${stepMethod}.json`;
-			await this._runSFDX({ config, command, logFile });
 			let result = await Logs2.promptYesNo({ config, question: 'Was the org created succesfully?' });
 			if (!result) {
 				throw new Error(`${config.currentStep} failed`);
 			}
 		} else {
-			Colors2.sfdxShowStatus({ status: '' });
-			Colors2.sfdxShowStatus({ status: config.currentStep });
-			Colors2.sfdxShowCommand({ command });
 			this._skipBecauseCICD({ config });
 		}
 	}
@@ -248,7 +247,7 @@ export default class SFDX {
 		});
 	}
 
-	async InstallPackages({ config, data }) {
+	async InstallPackage({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
 
@@ -259,7 +258,6 @@ export default class SFDX {
 			stepNumber,
 			stepMethod,
 			commandMaker: ({ stepData }) => {
-				debugger;
 				const key = stepData.key ? ` --installation-key="${stepData.key}" ` : '';
 				return `sf package install --apex-compile=all --package "${stepData.id}" ${key} --wait=30 --no-prompt --json`;
 			},
@@ -277,7 +275,7 @@ export default class SFDX {
 		await this._runSFDX({ config, command, logFile });
 	}
 
-	async AssignPermissionSets({ config, data }) {
+	async AssignPermissionSet({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
 
@@ -356,7 +354,7 @@ export default class SFDX {
 		await this._runSFDX({ config, command, logFile });
 	}
 
-	async PublishCommunities({ config, data }) {
+	async PublishCommunity({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
 
@@ -384,7 +382,7 @@ export default class SFDX {
 		await this._runSFDX({ config, command, logFile });
 
 		// Display password
-		config.currentStep = `${stepNumber}a. ${stepMethod} (Display)`;
+		config.currentStep = `${stepNumber}b. ${stepMethod} (Display)`;
 		command = 'sf org display user --json';
 		logFile = `${stepNumber}b_${stepMethod}.json`;
 		let result = await this._runSFDX({ config, command, logFile });
@@ -482,12 +480,12 @@ export default class SFDX {
 			ET_Asserts.equals({ expected: true, actual: fromMethod.startsWith('SFDX.'), message });
 		} catch (ex) {
 			Logs2.reportErrorMessage({ config, msg: message });
-			process.exit(-1);
+			process.exit(-6);
 		}
 
 		return {
 			stepMethod: fromMethod.replace('SFDX.', ''),
-			stepNumber: `LIST_${config.stepNumber.toString().padStart(2, '0')}`,
+			stepNumber: `${config.stepNumber.toString().padStart(2, '0')}`,
 		};
 	}
 
@@ -504,9 +502,11 @@ export default class SFDX {
 			for (let idx = 0; idx < data.length; idx++) {
 				const letter = String.fromCharCode('a'.charCodeAt(0) + idx);
 				const logFile = `${stepNumber}${letter}. ${stepMethod}.json`;
+				const stepData = data[idx];
+				config.step = JSON.stringify({ [Object.keys(JSON.parse(config.step))[0]]: stepData });
 				config.currentStep = `${stepNumber}${letter}. ${stepMethod} (multi-item)`;
 				try {
-					await this._runSFDX({ config, command: commandMaker({ stepData: data[idx] }), logFile });
+					await this._runSFDX({ config, command: commandMaker({ stepData }), logFile });
 				} catch (ex) {
 					if (config.settings.QuitOnErrors) {
 						throw ex;
@@ -514,9 +514,6 @@ export default class SFDX {
 						errors.push(ex);
 					}
 				}
-			}
-			if (errors.length > 0) {
-				throw errors;
 			}
 		} else {
 			this._showStepSkipped({ config });
@@ -549,7 +546,7 @@ export default class SFDX {
 			let data = {
 				result: {
 					step: notification.currentStep,
-					command: `${notification.app} ${notification.args.join(' ')}`,
+					command: `${notification.app} ${notification.args?.join(' ')}`,
 					cwd: notification.cwd,
 					start,
 					stop_: stop,
@@ -581,28 +578,59 @@ export default class SFDX {
 			await OS2.writeFile({ config, path, data });
 		};
 
-		try {
-			start = new Date();
-			Colors2.sfdxShowStatus({ status: '' });
-			Colors2.sfdxShowStatus({ status: config.currentStep });
-			Colors2.sfdxShowCommand({ command });
-			Colors2.sfdxShowMessage({ msg: `${start} | ${config.currentStep} | Started` });
+		start = new Date();
+		Colors2.sfdxShowStatus({ status: '' });
+		Colors2.sfdxShowStatus({ status: config.currentStep });
+		Colors2.sfdxShowCommand({ command });
+		Colors2.sfdxShowMessage({ msg: `${start} | ${config.currentStep} | Started` });
 
-			config.commands.push(`${config.currentStep.split(' ')[0]} ${command}`);
-			command = command.split(' ');
-			let app = command.shift();
-			let args = command;
-			result = await OS2.executeAsync({
-				config,
-				app,
-				args,
-				cwd: config.root,
-				expectedCode: 0,
-				callbackAreWeDone: (data) => {
-					if (config.debug) Colors2.debug({ msg: data.item });
-					notification = data;
-				},
-			});
+		// Add command to list of commmands
+		let strCommmand = '';
+		strCommmand = `${config.currentStep}\n`;
+		if (!config.currentStep.includes(config.step)) {
+			strCommmand += `\t${config.step}\n`;
+		}
+		strCommmand += `\t${command}`;
+		config.commands.push(strCommmand);
+		try {
+			if (config.isDebugSkipSFDX) {
+				notification = {
+					currentStep: config.currentStep,
+					eventName: 'CLOSE',
+					app: 'TESTING ',
+					args: 'WITHOUT SFDX COMMANDS'.split(' '),
+					cwd: '/Users/aperez/Git Projects/current/ScratchOrgNodeJS',
+					item: { code: config.isDebugSkipSFDX.code, signal: null },
+					response: {
+						STDERR: 'TESTING WITHOUT SFDX COMMANDS\n',
+						STDOUT: 'TESTING WITHOUT SFDX COMMANDS\n',
+						CLOSE: { code: config.isDebugSkipSFDX.code, signal: null },
+					},
+				};
+				result = {
+					STDERR: null,
+					STDOUT: {
+						code: 0,
+						warnings: [],
+					},
+					CLOSE: { code: 0, signal: null },
+				};
+			} else {
+				command = command.split(' ');
+				let app = command.shift();
+				let args = command;
+				result = await OS2.executeAsync({
+					config,
+					app,
+					args,
+					cwd: config.root,
+					expectedCode: 0,
+					callbackAreWeDone: (data) => {
+						if (config.debugMessages) Colors2.debug({ msg: data.item });
+						notification = data;
+					},
+				});
+			}
 			if (result.CLOSE.code !== 0) {
 				throw result;
 			}
@@ -613,10 +641,10 @@ export default class SFDX {
 		} catch (ex) {
 			stop = new Date();
 			await logResults(true);
-			config.errors.push(config.currentStep);
+			config.errors.push(strCommmand);
 			let msg = `${config.currentStep} failed`;
 			Logs2.reportErrorMessage({ config, msg: `${stop} | ${config.currentStep} | Failed to execute` });
-			if (config.debug) {
+			if (config.debugMessages) {
 				if (ex.STDOUT && ex.STDERR) {
 					if (ex.STDOUT) {
 						ex.STDOUT.split('\n').forEach((line) => {

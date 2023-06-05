@@ -7,20 +7,20 @@
 		"UserOnScreen": false // Can I prompt the user for manual verification? On CICD, this should be false
 	},
 	"steps": [
-		// // Prepare environment
-		// "ValidateETCopyData",
-		// "RunJestTests",
-		// "BackupAlias", // In case you need to go back to the old org :-)
+		// Prepare environment
+		"ValidateETCopyData",
+		"RunJestTests",
+		"BackupAlias", // In case you need to go back to the old org :-)
 
-		// // Creating Scratch org
-		// "CreateScratchOrg",
-		// "CreateFinestDebugLevel",
-		// "PauseToCheckOrg",
-		// "ShowDeployPage",
-		// { "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed first
-		// { "ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"] }, // Some metadata may need to be manually configured
-		// { "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
-		// { "InstallPackages": [{ "id": "04tB0000000P1yA", "key": "abcd1234" }, { "id": "04tB0000000P1yB" }] }, // Install required packages before pushing (password is optional and it can be left out)
+		// Creating Scratch org
+		"CreateScratchOrg",
+		"CreateFinestDebugLevel",
+		"PauseToCheckOrg",
+		"ShowDeployPage",
+		{ "PrepareOrg": ["./@ELTOROIT/metadata/API/"] }, // Some metadata may need to be deployed first
+		{ "ManualMetadata": ["/lightning/setup/SalesforceMobileAppQuickStart/home"] }, // Some metadata may need to be manually configured
+		{ "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
+		{ "InstallPackages": [{ "id": "04tB0000000P1yA", "key": "abcd1234" }, { "id": "04tB0000000P1yB" }] }, // Install required packages before pushing (password is optional and it can be left out)
 
 		// Push metadata
 		"PushMetadata",
@@ -34,7 +34,7 @@
 		{ "ETCopyData": "./@ELTOROIT/data" },
 		{ "ExecuteApex": ["@ELTOROIT/scripts/apex/testApex_Good.apex"] },
 		"RunApexTests",
-		{ "PublishCommunityName": "ABC" },
+		{ "PublishCommunities": ["ABC"] },
 		"GeneratePassword",
 
 		// CICD

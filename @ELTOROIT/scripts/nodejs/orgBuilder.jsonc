@@ -20,8 +20,8 @@
 		{ "DeployMetadata": "./@ELTOROIT/metadata/API/" },
 		{ "ManualMetadata": "/lightning/setup/SalesforceMobileAppQuickStart/home" },
 		{ "ExecuteApex": "@ELTOROIT/scripts/apex/testApex_Good.apex" },
-		{ "InstallPackage": { "id": "04tB0000000P1yA", "key": "abcd1234" } },
-		{ "InstallPackage": { "id": "04tB0000000P1yA" } },
+		// FAILS ON DEMO -- { "InstallPackage": { "id": "04tB0000000P1yA", "key": "abcd1234" } },
+		// FAILS ON DEMO -- { "InstallPackage": { "id": "04tB0000000P1yA" } },
 
 		// Push metadata
 		"PushMetadata",
@@ -35,12 +35,12 @@
 		{ "ETCopyData": "./@ELTOROIT/data" },
 		{ "ExecuteApex": "@ELTOROIT/scripts/apex/testApex_Good.apex" },
 		"RunApexTests",
-		{ "PublishCommunity": "ABC" },
+		// FAILS ON DEMO -- { "PublishCommunity": "ABC" },
 		"GeneratePassword",
 
 		// CICD
-		{ "DeployToSandbox": { "alias": "sbDEMO-1", "folder": "./force-apps/deploy", "runTests": true } },
-		{ "DeployToSandbox": { "alias": "sbDEMO-2", "folder": "./force-apps/deploy", "runTests": true } },
+		// FAILS ON DEMO -- { "DeployToSandbox": { "alias": "sbDEMO-1", "folder": "./force-apps/deploy", "runTests": true } },
+		// FAILS ON DEMO -- { "DeployToSandbox": { "alias": "sbDEMO-2", "folder": "./force-apps/deploy", "runTests": true } },
 
 		// Print results
 		"ShowFinalSuccess"

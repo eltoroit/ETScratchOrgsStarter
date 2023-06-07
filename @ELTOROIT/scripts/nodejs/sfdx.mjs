@@ -363,10 +363,10 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		// sfdx ETCopyData delete --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-		// sfdx ETCopyData export --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-		// sfdx ETCopyData import --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
-		command = `sfdx ETCopyData import --configfolder "${data}" --loglevel="info" --json --orgsource="${config.settings.alias}" --orgdestination="${config.settings.alias}"`;
+		// sfdx ETCopyData delete --configfolder="./@ELTOROIT/data" --loglevel trace --json
+		// sfdx ETCopyData export --configfolder="./@ELTOROIT/data" --loglevel trace --json
+		// sfdx ETCopyData import --configfolder="./@ELTOROIT/data" --loglevel trace --json
+		command = `sfdx ETCopyData import --configfolder "${data}" --loglevel="trace" --json --orgsource="${config.settings.alias}" --orgdestination="${config.settings.alias}"`;
 		logFile = `${stepNumber}_${stepMethod}.json`;
 		await this._runSFDX({ config, command, logFile });
 	}

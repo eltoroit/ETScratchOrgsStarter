@@ -45,7 +45,7 @@ jobs:
                   sf org login sfdx-url --sfdx-url-file "$HOME/token.txt" --set-default-dev-hub --alias DevHub
             - name: Create Scratch Org
               run: |
-                  node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs
+                  node ./@ELTOROIT/scripts/nodejs/orgBuilder.mjs --config-file=@ELTOROIT/scripts/nodejs/orgBuilder.jsonc
             # Upload logs as artifacts
             - name: Upload artifacts
               uses: actions/upload-artifact@v3

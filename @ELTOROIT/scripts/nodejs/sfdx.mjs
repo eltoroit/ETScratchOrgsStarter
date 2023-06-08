@@ -317,7 +317,7 @@ export default class SFDX {
 		await this._runSFDX({ config, command, logFile });
 	}
 
-	async DeployAdminProfile({ config, data }) {
+	async DeployProfile({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
 		let logFile, command;

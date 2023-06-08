@@ -30,7 +30,7 @@ export default class SFDX {
 	async processSteps({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
-		const reportError = (ex) => {
+		const reportError = async (ex) => {
 			Logs2.reportErrorMessage({ config, msg: `${ex.message}` });
 			if (ex.message !== `${config.currentStep} failed`) {
 				debugger;
@@ -43,6 +43,7 @@ export default class SFDX {
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
+				await this.ShowFinalSuccess({ config });
 				process.exit(-3);
 			}
 		};
@@ -56,7 +57,7 @@ export default class SFDX {
 					try {
 						await this[step]({ config });
 					} catch (ex) {
-						reportError(ex);
+						await reportError(ex);
 					}
 				} else {
 					Logs2.reportErrorMessage({ config, msg: `${config.stepNumber}: ${step}` });
@@ -83,7 +84,7 @@ export default class SFDX {
 					try {
 						await this[key]({ config, data });
 					} catch (ex) {
-						reportError(ex);
+						await reportError(ex);
 					}
 				} else {
 					Logs2.reportErrorMessage({ config, msg: `${config.stepNumber}: ${keys[0]}` });

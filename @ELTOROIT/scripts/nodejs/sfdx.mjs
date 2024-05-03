@@ -30,7 +30,7 @@ export default class SFDX {
 	async processSteps({ config }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 
-		const reportError = async (ex) => {
+		const reportError = (ex) => {
 			Logs2.reportErrorMessage({ config, msg: `${ex.message}` });
 			if (ex.message !== `${config.currentStep} failed`) {
 				debugger;
@@ -43,7 +43,6 @@ export default class SFDX {
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
 				Logs2.reportErrorMessage({ config, msg: '' });
-				await this.ShowFinalSuccess({ config });
 				process.exit(-3);
 			}
 		};
@@ -57,7 +56,7 @@ export default class SFDX {
 					try {
 						await this[step]({ config });
 					} catch (ex) {
-						await reportError(ex);
+						reportError(ex);
 					}
 				} else {
 					Logs2.reportErrorMessage({ config, msg: `${config.stepNumber}: ${step}` });
@@ -84,7 +83,7 @@ export default class SFDX {
 					try {
 						await this[key]({ config, data });
 					} catch (ex) {
-						await reportError(ex);
+						reportError(ex);
 					}
 				} else {
 					Logs2.reportErrorMessage({ config, msg: `${config.stepNumber}: ${keys[0]}` });
@@ -106,7 +105,8 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = 'sfdx plugins';
+		// command = 'sfdx plugins';
+		command = './node_modules/sfdx-cli/bin/run plugins';
 		logFile = `${stepNumber}_${stepMethod}.json`;
 		let result = await this._runSFDX({ config, command, logFile });
 
@@ -164,9 +164,11 @@ export default class SFDX {
 		const createNewOrg = async () => {
 			const { stepNumber, stepMethod } = this.getStepId({ config, offset: 1 });
 			config.currentStep = `${stepNumber}. ${stepMethod} (Create new org)`;
-			command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.settings.alias}" --duration-days="${config.settings.days}" --json`;
+			command = `sf org create scratch --definition-file="config/project-scratch-def.json" --set-default --alias="${config.settings.alias}" --duration-days="${config.settings.days}" --wait=600`;
 			logFile = `${stepNumber}_${stepMethod}.json`;
+			config.printData = true;
 			await this._runSFDX({ config, command, logFile });
+			config.printData = false;
 		};
 
 		const setAsDefault = async () => {
@@ -338,7 +340,7 @@ export default class SFDX {
 			errors.push(ex);
 		}
 
-		// Deploy admin profile
+		// Deploy profile
 		try {
 			await this._runSFDX({ config, command, logFile });
 		} catch (ex) {
@@ -364,10 +366,11 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		// sfdx ETCopyData delete --configfolder="./@ELTOROIT/data" --loglevel trace --json
-		// sfdx ETCopyData export --configfolder="./@ELTOROIT/data" --loglevel trace --json
-		// sfdx ETCopyData import --configfolder="./@ELTOROIT/data" --loglevel trace --json
-		command = `sfdx ETCopyData import --configfolder "${data}" --loglevel="trace" --json --orgsource="${config.settings.alias}" --orgdestination="${config.settings.alias}"`;
+		// sfdx ETCopyData delete --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// sfdx ETCopyData export --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// sfdx ETCopyData import --configfolder="./@ELTOROIT/data" --loglevel trace --json > ./etLogs/etCopyData.tab
+		// command = `sfdx ETCopyData import --configfolder "${data}" --loglevel="info" --json --orgsource="${config.settings.alias}" --orgdestination="${config.settings.alias}"`;
+		command = `./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder "${data}" --loglevel="info" --json --orgsource="${config.settings.alias}" --orgdestination="${config.settings.alias}"`;
 		logFile = `${stepNumber}_${stepMethod}.json`;
 		await this._runSFDX({ config, command, logFile });
 	}

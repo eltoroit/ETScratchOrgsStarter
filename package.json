@@ -1,7 +1,7 @@
 {
 	"name": "et-basic-project",
 	"private": true,
-	"version": "Summer '22 (v55)",
+	"version": "Summer '24 (v60)",
 	"description": "Sample SFDX Scratch Project",
 	"repository": {
 		"type": "git",
@@ -19,17 +19,11 @@
 	},
 	"homepage": "https://github.com/eltoroit/ETScratchOrgsStarter#readme",
 	"scripts": {
+		"build": "./build.sh",
 		"createOrg": "node @ELTOROIT/scripts/nodejs/orgBuilder.mjs --config-file=@ELTOROIT/scripts/nodejs/orgBuilder.jsonc",
-		"lint": "npm run lint:lwc && npm run lint:aura",
-		"lint:aura": "eslint **/aura/**",
-		"lint:lwc": "eslint **/lwc/**",
-		"test": "npm run test:unit",
-		"test:unit": "sfdx-lwc-jest",
-		"test:unit:watch": "sfdx-lwc-jest --watch",
-		"test:unit:debug": "sfdx-lwc-jest --debug",
-		"test:unit:coverage": "sfdx-lwc-jest --coverage",
-		"prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
-		"prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\""
+		"exportData": "./node_modules/sfdx-cli/bin/run ETCopyData export --configfolder ./@ELTOROIT/data --loglevel trace --json",
+		"importData": "./node_modules/sfdx-cli/bin/run ETCopyData import --configfolder ./@ELTOROIT/data --loglevel trace --json",
+		"deleteData": "./node_modules/sfdx-cli/bin/run ETCopyData delete --configfolder ./@ELTOROIT/data --loglevel trace --json"
 	},
 	"devDependencies": {
 		"@prettier/plugin-xml": "2.2.0",
@@ -42,19 +36,6 @@
 		"lint-staged": "13.2.2",
 		"prettier": "2.8.8",
 		"prettier-plugin-apex": "1.13.0"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
-	"lint-staged": {
-		"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [
-			"prettier --write"
-		],
-		"**/{aura|lwc}/**": [
-			"eslint"
-		]
 	},
 	"dependencies": {
 		"fs-extra": "11.1.1",

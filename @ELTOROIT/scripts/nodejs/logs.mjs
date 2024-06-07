@@ -24,10 +24,11 @@ export default class Logs {
 		Colors2.sfdxShowError({ msg });
 	}
 
-	static async promptYesNo({ config, question }) {
+	static async promptYesNo({ config, message, question }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: question, message: 'question' });
 
+		Colors2.sfdxPromptMessage({ msg: message });
 		Colors2.sfdxPromptMessage({ msg: question });
 		const rl = readline.createInterface({ input, output });
 

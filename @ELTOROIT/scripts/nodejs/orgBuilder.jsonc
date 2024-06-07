@@ -18,7 +18,7 @@
 		"PauseToCheckOrg",
 		"ShowDeployPage",
 		{ "DeployMetadata": "./@ELTOROIT/metadata/API/" },
-		{ "ManualMetadata": "/lightning/setup/SalesforceMobileAppQuickStart/home" },
+		{ "ManualMetadata": { "url": "/lightning/setup/SalesforceMobileAppQuickStart/home", "message": "This is a test!" } },
 		{ "ExecuteApex": "@ELTOROIT/scripts/apex/testApex_Good.apex" },
 		// FAILS ON DEMO -- { "InstallPackage": { "id": "04tB0000000P1yA", "key": "abcd1234" } },
 		// FAILS ON DEMO -- { "InstallPackage": { "id": "04tB0000000P1yA" } },
@@ -26,7 +26,7 @@
 		// Push metadata
 		"PushMetadata",
 		{ "DeployMetadata": "./@ELTOROIT/metadata/API/" },
-		{ "ManualMetadata": "/lightning/setup/SalesforceMobileAppQuickStart/home" },
+		{ "ManualMetadata": { "url": "/lightning/setup/SalesforceMobileAppQuickStart/home", "message": "This is a test!" } },
 		{ "ExecuteApex": "@ELTOROIT/scripts/apex/SetUserRecord.apex" },
 		{ "AssignPermissionSet": "psTest" },
 		{ "DeployProfile": "force-apps/doNotDeploy/main/default/profiles/Admin.profile-meta.xml" },

@@ -61,12 +61,16 @@ export default class Colors {
 
 	static sfdxPromptMessage({ msg }) {
 		ET_Asserts.hasData({ value: msg, message: 'msg' });
-		console.log(this.getPromptMessage({ msg }));
+		console.log(this.getPromptMessage({ msg, ask: true }));
 	}
 
-	static getPromptMessage({ msg }) {
+	static getPromptMessage({ msg, ask = false }) {
 		ET_Asserts.hasData({ value: msg, message: 'msg' });
-		return colorBgBlack + colorBright + colorFgYellow + msg + colorReset;
+		if (ask) {
+			return colorBgBlack + colorBright + colorFgYellow + msg + colorReset;
+		} else {
+			return colorBgBlack + colorBright + colorFgRed + colorReverse + msg + colorReset;
+		}
 	}
 }
 

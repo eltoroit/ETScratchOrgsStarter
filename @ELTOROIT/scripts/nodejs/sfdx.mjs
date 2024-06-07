@@ -258,12 +258,12 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = `sf org open --path="${data}" --json`;
+		command = `sf org open --path="${data.url}" --json`;
 		logFile = `${stepNumber}_${stepMethod}.json`;
 		await this._runSFDX({ config, command, logFile });
 
 		if (config.settings.UserOnScreen) {
-			let result = await Logs2.promptYesNo({ config, question: 'Did you complete the manual steps on this page?' });
+			let result = await Logs2.promptYesNo({ config, message: data.message, question: 'Did you complete the manual steps on this page?' });
 			if (!result) {
 				throw new Error(`${config.currentStep} failed`);
 			}

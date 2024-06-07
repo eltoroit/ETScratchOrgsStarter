@@ -28,7 +28,9 @@ export default class Logs {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: question, message: 'question' });
 
-		Colors2.sfdxPromptMessage({ msg: message });
+		if (message) {
+			Colors2.sfdxPromptMessage({ msg: message });
+		}
 		Colors2.sfdxPromptMessage({ msg: question });
 		const rl = readline.createInterface({ input, output });
 

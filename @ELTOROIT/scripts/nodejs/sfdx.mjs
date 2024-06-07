@@ -254,6 +254,8 @@ export default class SFDX {
 	async ManualMetadata({ config, data }) {
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: data, message: 'data' });
+		ET_Asserts.hasData({ value: data.url, message: 'data.url' });
+		ET_Asserts.hasData({ value: data.message, message: 'data.message' });
 		let logFile, command;
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });

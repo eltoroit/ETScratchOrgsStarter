@@ -3,8 +3,8 @@
 		"days": 1,
 		"alias": "soDEMO",
 		"OpenBrowser": true,
-		"QuitOnErrors": false,
-		"UserOnScreen": false // Can I prompt the user for manual verification? On CICD, this should be false
+		"QuitOnErrors": true,
+		"UserOnScreen": true // Can I prompt the user for manual verification? On CICD, this should be false
 	},
 	"steps": [
 		// Prepare environment

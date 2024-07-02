@@ -423,9 +423,11 @@ export default class SFDX {
 				let user = stdOut.result;
 				let warnings = stdOut.warnings.filter((warning) => warning.includes('sensitive information'))[0];
 				let url = `${user.instanceUrl}/secur/frontdoor.jsp?sid=${user.accessToken}`;
+				user.consumerKey = '';
+				user.consumerSecret = '';
+				let path = `${config.rootLogs}/_user.json`;
 				let obj = { command, url, user, warnings };
 				let data = Colors2.getPrettyJson({ obj });
-				let path = `${config.rootLogs}/_user.json`;
 				await OS2.writeFile({ config, path, data });
 				Colors2.sfdxShowNote({ msg: `User credentials are saved in this file: ${path}` });
 			}

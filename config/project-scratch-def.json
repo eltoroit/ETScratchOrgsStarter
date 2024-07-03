@@ -1,16 +1,17 @@
 {
-	"orgName": "ELTOROIT Demos Computing",
+	"orgName": "ELTOROit Data Cloud Scratch Org",
 	"edition": "Developer",
 	"hasSampleData": false,
-	"features": [
-		"EnableSetPasswordInApi"
-	],
+	"features": ["EnableSetPasswordInApi", "CustomerDataPlatform", "MarketingUser"],
 	"settings": {
 		"lightningExperienceSettings": {
 			"enableS1DesktopEnabled": true
 		},
 		"mobileSettings": {
 			"enableS1EncryptedStoragePref2": false
+		},
+		"customerDataPlatformSettings": {
+			"enableCustomerDataPlatform": true
 		}
 	}
 }

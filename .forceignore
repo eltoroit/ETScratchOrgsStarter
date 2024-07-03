@@ -20,3 +20,29 @@ Admin.profile
 
 # Ignore any profile... Comment this line if you do need to work with your own profiles
 **/profiles/** 
+
+#  Files Created by Data Cloud
+**/authproviders/*SegmentIntelligence*
+**/cdp_crm_dk1__*
+**/cdpactvstrgptnr__*
+**/dataConnectorIngestApis
+**/dataSourceObjects
+**/dataSourceTenants/SalesforceDotCom*
+**/dataStreamDefinitions
+**/dataStreamTemplates
+**/externalDataConnectors
+**/fieldSrcTrgtRelationships
+**/flexipages/CDP*
+**/internalDataConnectors/SalesforceDotCom*
+**/marketSegmentDefinitions
+**/mktCalcInsightObjectDefs
+**/mktDataSources
+**/mktDataSources/SFDC_*
+**/mktDataTranObjects
+**/objects/*__dll
+**/objects/*__dlm
+**/objects/IndividualGDPRState__dl*/**
+**/objectSourceTargetMaps
+**/objectSourceTargetMaps/IndividualGDPRState*
+**/permissionsets/sfdc_c360a_sfdctrust_permSet.permissionset-meta.xml
+**/ssot__*

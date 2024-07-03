@@ -14,6 +14,10 @@
 		// Creating Scratch org
 		"CreateScratchOrg",
 		"CreateFinestDebugLevel",
+		// Wait for the Data Cloud org to be ready (clicking the blue button)
+		{ "ManualMetadata": { "url": "/lightning/setup/SetupOneHome/home?setupApp=audience360", "message": "Wait until the Data Cloud instance is ready" } },
+		// This is the "Sales Cloud Data Bundle v1.1" package
+		{ "InstallPackage": { "id": "04tB0000000BYKv" } },
 
 		// Push metadata
 		"ShowDeployPage",

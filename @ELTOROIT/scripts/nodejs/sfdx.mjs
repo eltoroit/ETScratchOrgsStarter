@@ -568,16 +568,25 @@ export default class SFDX {
 	}
 
 	async _runSFDX({ config, command, logFile }) {
+		let output;
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: command, message: 'command' });
 		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
 
 		if (command.startsWith('sf org open') && !config.settings.OpenBrowser) {
-			Colors2.sfdxShowNote({ msg: 'Brwoser not was not open because flag [OpenBrowser] is not true' });
-			return {};
+			// Colors2.sfdxShowNote({ msg: 'Browser not was not open because flag [OpenBrowser] is not true' });
+			// return {};
+			command += ' --url-only';
+			output = await this._runAndLog({ config, command, logFile });
+			let url = JSON.parse(output.STDOUT).result.url;
+			Colors2.sfdxShowNote({ msg: 'Open this link manually...' });
+			Colors2.sfdxShowCommand({ command: url });
+			debugger;
+		} else {
+			output = await this._runAndLog({ config, command, logFile });
 		}
 
-		return await this._runAndLog({ config, command, logFile });
+		return output;
 	}
 
 	async _runAndLog({ config, command, logFile }) {

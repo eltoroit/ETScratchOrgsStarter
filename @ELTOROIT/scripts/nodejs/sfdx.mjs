@@ -244,11 +244,37 @@ export default class SFDX {
 		ET_Asserts.hasData({ value: data, message: 'data' });
 		let logFile, command;
 
-		const { stepNumber, stepMethod } = this.getStepId({ config });
-		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = `sf project deploy start --source-dir="${data}" --wait=30 --verbose --json`;
-		logFile = `${stepNumber}_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		// Move .forceignore (hide it)
+		let errors = [];
+		const pathOriginal = '.forceignore';
+		const pathHidden = 'etLogs/.forceignore';
+		try {
+			await OS2.moveFile({ config, oldPath: pathOriginal, newPath: pathHidden });
+		} catch (ex) {
+			errors.push(ex);
+		}
+
+		// Deploy metadata
+		try {
+			const { stepNumber, stepMethod } = this.getStepId({ config });
+			config.currentStep = `${stepNumber}. ${stepMethod}`;
+			command = `sf project deploy start --source-dir="${data}" --wait=30 --verbose --json`;
+			logFile = `${stepNumber}_${stepMethod}.json`;
+			await this._runSFDX({ config, command, logFile });
+		} catch (ex) {
+			errors.push(ex);
+		}
+
+		// Move .forceignore (restore it)
+		try {
+			await OS2.moveFile({ config, oldPath: pathHidden, newPath: pathOriginal });
+		} catch (ex) {
+			errors.push(ex);
+		}
+
+		if (errors.length > 0) {
+			throw new MyException(`${config.currentStep} failed`, errors);
+		}
 	}
 
 	async ManualMetadata({ config, data }) {

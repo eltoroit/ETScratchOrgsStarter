@@ -1,3 +1,4 @@
+import os from 'os';
 import Logs2 from './logs.mjs';
 import Colors2 from './colors.mjs';
 import OS2 from './lowLevelOs.mjs';
@@ -256,9 +257,20 @@ export default class SFDX {
 
 		// Deploy metadata
 		try {
+			debugger;
 			const { stepNumber, stepMethod } = this.getStepId({ config });
 			config.currentStep = `${stepNumber}. ${stepMethod}`;
-			command = `sf project deploy start --source-dir="${data}" --wait=30 --verbose --json`;
+			let location = 'ERROR';
+			if (typeof data === 'string') {
+				location = `--source-dir="${data}"`;
+			} else if (data['source-dir']) {
+				location = `--source-dir="${data['source-dir']}"`;
+			} else if (data['metadata-dir']) {
+				location = `--metadata-dir="${data['metadata-dir']}"`;
+			} else {
+				throw "Can't understand request";
+			}
+			command = `sf project deploy start ${location} --wait=30 --verbose --json`;
 			logFile = `${stepNumber}_${stepMethod}.json`;
 			await this._runSFDX({ config, command, logFile });
 		} catch (ex) {
@@ -286,9 +298,33 @@ export default class SFDX {
 
 		const { stepNumber, stepMethod } = this.getStepId({ config });
 		config.currentStep = `${stepNumber}. ${stepMethod}`;
-		command = `sf org open --path="${data.url}" --json`;
 		logFile = `${stepNumber}_${stepMethod}.json`;
-		await this._runSFDX({ config, command, logFile });
+		debugger;
+		if (data.url.toLowerCase().startsWith('http')) {
+			// Absolute path
+			const platform = os.platform();
+			const type = os.type();
+			switch (platform) {
+				case 'win32':
+					command = `start`;
+					break;
+				case 'darwin':
+					command = `open`;
+					break;
+				case 'linux':
+					command = `xdg-open`;
+					break;
+				default:
+					throw `Operating System not supported [${type}]`;
+			}
+
+			command = `${command} ${data.url}`;
+			await this._runAndLog({ config, command, logFile });
+		} else {
+			// Relative path
+			command = `sf org open --path="${data.url}" --json`;
+			await this._runSFDX({ config, command, logFile });
+		}
 
 		if (config.settings.UserOnScreen) {
 			let result = await Logs2.promptYesNo({ config, message: data.message, question: 'Did you complete the manual steps on this page?' });
@@ -594,25 +630,16 @@ export default class SFDX {
 	}
 
 	async _runSFDX({ config, command, logFile }) {
-		let output;
 		ET_Asserts.hasData({ value: config, message: 'config' });
 		ET_Asserts.hasData({ value: command, message: 'command' });
 		ET_Asserts.hasData({ value: logFile, message: 'logFile' });
 
 		if (command.startsWith('sf org open') && !config.settings.OpenBrowser) {
-			// Colors2.sfdxShowNote({ msg: 'Browser not was not open because flag [OpenBrowser] is not true' });
-			// return {};
-			command += ' --url-only';
-			output = await this._runAndLog({ config, command, logFile });
-			let url = JSON.parse(output.STDOUT).result.url;
-			Colors2.sfdxShowNote({ msg: 'Open this link manually...' });
-			Colors2.sfdxShowCommand({ command: url });
-			debugger;
-		} else {
-			output = await this._runAndLog({ config, command, logFile });
+			Colors2.sfdxShowNote({ msg: 'Brwoser not was not open because flag [OpenBrowser] is not true' });
+			return {};
 		}
 
-		return output;
+		return await this._runAndLog({ config, command, logFile });
 	}
 
 	async _runAndLog({ config, command, logFile }) {

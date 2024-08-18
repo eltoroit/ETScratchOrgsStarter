@@ -19,6 +19,7 @@
 		"ShowDeployPage",
 		{ "DeployMetadata": "./@ELTOROIT/metadata/API/" },
 		{ "ManualMetadata": { "url": "/lightning/setup/SalesforceMobileAppQuickStart/home", "message": "This is a test!" } },
+		// { "ManualMetadata": { "url": "https://appexchange.salesforce.com/appxListingDetail?listingId=a0NHu00000ozQhpMAE", "message": "Install ETOrchestrateDC Package" } },
 		{ "ExecuteApex": "@ELTOROIT/scripts/apex/testApex_Good.apex" },
 		// FAILS ON DEMO -- { "InstallPackage": { "id": "04tB0000000P1yA", "key": "abcd1234" } },
 		// FAILS ON DEMO -- { "InstallPackage": { "id": "04tB0000000P1yA" } },
